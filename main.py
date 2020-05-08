@@ -378,7 +378,7 @@ prefixDir = os.path.join(os.getcwd(), 'prefixes')
 todayDir = os.path.join(os.getcwd(), 'todayadded')
 client = discord.Client()
 
-with open('token2.txt', 'r') as file:
+with open('token.txt', 'r') as file:
     token = file.read()
 
 skinsDir = os.path.join(os.getcwd(), 'skins')
