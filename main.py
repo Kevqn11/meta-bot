@@ -299,7 +299,10 @@ async def before_wall{id}():
                     pass
     embed = discord.Embed(title = ':warning: Time to check walls!', description = 'It has been `{settings[1][1]} minutes` since the last wall-check.', color = discord.Colour.gold())
     embed.set_footer(text = f'''Wall-Check Alert | {{datetime.datetime.utcnow().strftime("%a %d %b '%y at %H:%M:%S GMT")}}''')
-    msg = await ch.send(embed = embed)
+    if {settings[1][7]}:
+        msg = await ch.send(content = 'Check now <@&{settings[1][6]}>', embed = embed)
+    else:
+        msg = await ch.send(embed = embed)
     await msg.add_reaction('\U00002705')
     await msg.add_reaction('\U0001F4A3')
     await asyncio.sleep({settings[1][2]*60})
@@ -354,7 +357,10 @@ async def before_buffer{id}():
                     pass
     embed = discord.Embed(title = ':warning: Time to check buffers!', description = 'It has been `{settings[2][1]} minutes` since the last buffer-check.', color = discord.Colour.gold())
     embed.set_footer(text = f'''Buffer-Check Alert | {{datetime.datetime.utcnow().strftime("%a %d %b '%y at %H:%M:%S GMT")}}''')
-    msg = await ch.send(embed = embed)
+    if {settings[2][7]}:
+        msg = await ch.send(content = 'Check now <@&{settings[2][6]}>', embed = embed)
+    else:
+        msg = await ch.send(embed = embed)
     await msg.add_reaction('\U00002705')
     await msg.add_reaction('\U0001F4A3')
     await asyncio.sleep({settings[2][2]*60})
@@ -567,8 +573,8 @@ async def on_ready():
                         with open(os.path.join(settingsDir, str(a.id)+'.txt'), 'w') as file:
                             file.write(str(settings))
                 else:
-                    #          [status, realm, goal, ch, role], [status, checkfreq, remFreq, lastcheck, player, channel, role], [same as previous]
-                    settings = [[True, 'WITHER', None, None, None],[False, 30, 10, None, None, None, None],[False, 30, 10, None, None, None, None]]
+                    #          [status, realm, goal, ch, role], [status, checkfreq, remFreq, lastcheck, player, channel, role, tag on 1st alert], [same as previous]
+                    settings = [[True, 'WITHER', None, None, None],[False, 30, 10, None, None, None, None, False],[False, 30, 10, None, None, None, None, False]]
                     found = False
                     for i in a.text_channels:
                         if i.name == 'value-added':
@@ -788,8 +794,8 @@ async def on_guild_join(a):
                 with open(os.path.join(settingsDir, str(a.id)+'.txt'), 'w') as file:
                     file.write(str(settings))
         else:
-            #          [status, realm, goal, ch, role], [status, checkfreq, remFreq, lastcheck, player, channel, role], [same as previous]
-            settings = [[True, 'WITHER', None, None, None],[False, 30, 10, None, None, None, None],[False, 30, 10, None, None, None, None]]
+            #          [status, realm, goal, ch, role], [status, checkfreq, remFreq, lastcheck, player, channel, role, tag on 1st alert], [same as previous]
+            settings = [[True, 'WITHER', None, None, None],[False, 30, 10, None, None, None, None, False],[False, 30, 10, None, None, None, None, False]]
             found = False
             for i in a.text_channels:
                 if i.name == 'value-added':
@@ -1763,32 +1769,7 @@ async def on_message(msg):
                     cmdword = split_space_list(cmd)[0]
                     if cmdword in ('valuemanagement', 'value') :
                         cmd = split_space(cmd).replace(' ', '')
-                        if cmd == '':
-                            with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                                settings = eval(file.read())
-                            embed = discord.Embed(title = ':gear: Settings - Value', description = f'Settings for __value__ related commands. Do `{prefix}help value` for more info.', color = discord.Colour.blue())
-
-                            if settings[0][0]:
-                                message = '`ENABLED`  :white_check_mark:'
-                            else:
-                                message = '`DISABLED`  :x:'
-                            embed.add_field(name = ':unlock: **Status**', value = message + f'\n__Enable/Disable__ the Value Management module using this setting.\n```{prefix}settings value <on/off/enable/disable>```', inline = False)
-                            embed.add_field(name = ':earth_americas: **Realm / Planet**', value = f"**Currently set to** `{settings[0][1]}`.\nChange the __spawner rates__ used for calculation by changing your realm.\n```{prefix}settings realm <realm>```", inline = False)
-                            embed.add_field(name = ':goal: **Daily Goal**', value = f"**Currently set to** `{settings[0][2]}`.\nSet your daily goal.\n```{prefix}settings goal <goal>```", inline = False)
-                            try:
-                                r = msg.guild.get_role(settings[0][4]).mention
-                            except:
-                                r = 'None'
-                            embed.add_field(name = ':label: **Role**', value = f"Currently set to** {r}.\nSet which role has access to __value module__ commands.\n```{prefix}settings role value <mention the role>```", inline = False)
-                            try:
-                                ch = client.get_channel(settings[0][3]).mention
-                            except:
-                                ch = 'None'
-                            embed.add_field(name = ':tv: **Channel**', value = f"**Currently set to** {ch}.\nSet the channel in which the embeds are posted.\n```{prefix}settings channel value <mention the channel>```\n\n__Note__: Some settings conditionally accept `None` as a valid input.")
-                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                            await msg.channel.send(embed = embed)
-
-                        elif cmd == 'on' or cmd == 'enable':
+                        if cmd == 'on' or cmd == 'enable':
                             if msg.author.guild_permissions.administrator:
                                 with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r+')  as file:
                                     settings = eval(file.read())
@@ -1873,6 +1854,30 @@ async def on_message(msg):
                                 embed = discord.Embed(title = ':gear: Settings - Value - Status', description = 'You do not have permission to execute that command.', color = discord.Colour.blue())
                                 embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
                                 await msg.channel.send(embed = embed)
+                        else:
+                            with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                settings = eval(file.read())
+                            embed = discord.Embed(title = ':gear: Settings - Value', description = f'Settings for __value__ related commands. Do `{prefix}help value` for more info.', color = discord.Colour.blue())
+
+                            if settings[0][0]:
+                                message = '`ENABLED`  :white_check_mark:'
+                            else:
+                                message = '`DISABLED`  :x:'
+                            embed.add_field(name = ':unlock: **Status**', value = message + f'\n__Enable/Disable__ the Value Management module using this setting.\n```{prefix}settings value <on/off/enable/disable>```', inline = False)
+                            embed.add_field(name = ':earth_americas: **Realm / Planet**', value = f"**Currently set to** `{settings[0][1]}`.\nChange the __spawner rates__ used for calculation by changing your realm.\n```{prefix}settings realm <realm>```", inline = False)
+                            embed.add_field(name = ':goal: **Daily Goal**', value = f"**Currently set to** `{settings[0][2]}`.\nSet your daily goal.\n```{prefix}settings goal <goal>```", inline = False)
+                            try:
+                                r = msg.guild.get_role(settings[0][4]).mention
+                            except:
+                                r = 'None'
+                            embed.add_field(name = ':label: **Role**', value = f"Currently set to** {r}.\nSet which role has access to __value module__ commands.\n```{prefix}settings role value <mention the role>```", inline = False)
+                            try:
+                                ch = client.get_channel(settings[0][3]).mention
+                            except:
+                                ch = 'None'
+                            embed.add_field(name = ':tv: **Channel**', value = f"**Currently set to** {ch}.\nSet the channel in which the embeds are posted.\n```{prefix}settings channel value <mention the channel>```\n\n__Note__: Some settings conditionally accept `None` as a valid input.")
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
                     elif cmdword == 'realm':
                         cmd = split_space(cmd).replace(' ', '').replace('realm', '')
                         if cmd == '':
@@ -1985,30 +1990,7 @@ async def on_message(msg):
                                     await msg.channel.send(embed = embed)
                     elif cmdword in ('walls', 'wall', 'wallcheck', 'wallchecks'):
                         cmd = split_space(cmd).replace(' ', '')
-                        if cmd == '':
-                            with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                                settings = eval(file.read())
-                            embed = discord.Embed(title = ':gear: Settings - WallCheck Alerts', description = f'Settings for __wall check__ related commands/features. Do `{prefix}settings <setting>` for more info.', color = discord.Colour.blue())
-                            if settings[1][0]:
-                                embed.add_field(name = ':green_circle: **Status**', value = f'**Currently set to** `ENABLED` :white_check_mark:\n__Enable/Disable__ the WallCheck module for the bot.\n```{prefix}settings walls <on/off/enable/disable>```', inline = False)
-                            else:
-                                embed.add_field(name = ':red_circle: **Status**', value = f'**Currently set to** `DISABLED` :x:\n__Enable/Disable__ the WallCheck module for the bot.\n```{prefix}settings walls <on/off/enable/disable>```', inline = False)
-
-                            embed.add_field(name = ':alarm_clock: **Check Frequency**', value = f'**Currently set to** `{settings[1][1]} minutes`\nSet the frequency of wallcheck alerts.\n```{prefix}settings checkFrequency walls <minutes>```', inline = False)
-                            embed.add_field(name = ':bell: **Reminder Frequency**', value = f'**Currently set to** `{settings[1][2]} minutes`\nSet the time after which reminders should be sent.\n```{prefix}settings reminderFrequency walls <minutes>```', inline = False)
-                            try:
-                                r = msg.guild.get_role(settings[1][6]).mention
-                            except:
-                                r = 'None'
-                            embed.add_field(name = ':label: **Role**', value = f"**Currently set to** {r}.\nSet which role has access to __wall-check module__ commands.\n```{prefix}settings role walls <mention the role>```", inline = False)
-                            try:
-                                ch = client.get_channel(settings[1][5]).mention
-                            except:
-                                ch = 'None'
-                            embed.add_field(name = ':tv: **Channel**', value = f'**Currently set to** {ch}\nSet the channel where the alerts are posted.\n```{prefix}settings channel walls <mention the channel>```\n\n__Note__: Some settings conditionally accept `None` as a valid input.')
-                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                            await msg.channel.send(embed = embed)
-                        elif cmd in ('on', 'enable'):
+                        if cmd in ('on', 'enable'):
                             if msg.author.guild_permissions.administrator:
                                 with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
                                     settings = eval(file.read())
@@ -2100,32 +2082,33 @@ async def on_message(msg):
                                 embed = discord.Embed(title = ':gear: Settings - WallCheck Alerts', description = 'You do not have permission to execute that command.', color = discord.Colour.blue())
                                 embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
                                 await msg.channel.send(embed = embed)
-                    elif cmdword in ('buffer', 'buffers', 'buffercheck', 'bufferchecks'):
-                        cmd = split_space(cmd).replace(' ', '')
-                        if cmd == '':
+                        else:
                             with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
                                 settings = eval(file.read())
-                            embed = discord.Embed(title = ':gear: Settings - Buffercheck Alerts', description = f'Settings for __buffer check__ related commands/features. Do `{prefix}settings <setting>` for more info.', color = discord.Colour.blue())
-                            if settings[2][0]:
-                                embed.add_field(name = ':green_circle: **Status**', value = f'**Currently set to** `ENABLED` :white_check_mark:\n__Enable/Disable__ the BufferCheck module for the bot.\n```{prefix}settings buffers <on/off/enable/disable>```', inline = False)
+                            embed = discord.Embed(title = ':gear: Settings - WallCheck Alerts', description = f'Settings for __wall check__ related commands/features. Do `{prefix}settings <setting>` for more info.', color = discord.Colour.blue())
+                            if settings[1][0]:
+                                embed.add_field(name = ':green_circle: **Status**', value = f'**Currently set to** `ENABLED` :white_check_mark:\n__Enable/Disable__ the WallCheck module for the bot.\n```{prefix}settings walls <on/off/enable/disable>```', inline = False)
                             else:
-                                embed.add_field(name = ':red_circle: **Status**', value = f'**Currently set to** `DISABLED` :x:\n__Enable/Disable__ the BufferCheck module for the bot.\n```{prefix}settings buffers <on/off/enable/disable>```', inline = False)
+                                embed.add_field(name = ':red_circle: **Status**', value = f'**Currently set to** `DISABLED` :x:\n__Enable/Disable__ the WallCheck module for the bot.\n```{prefix}settings walls <on/off/enable/disable>```', inline = False)
 
-                            embed.add_field(name = ':alarm_clock: **Check Frequency**', value = f'**Currently set to** `{settings[2][1]} minutes`\nSet the frequency of BufferCheck alerts.\n```{prefix}settings checkFrequency buffers <minutes>```', inline = False)
-                            embed.add_field(name = ':bell: **Reminder Frequency**', value = f'**Currently set to** `{settings[2][2]} minutes`\nSet the time after which reminders should be sent.\n```{prefix}settings reminderFrequency buffers <minutes>```', inline = False)
+                            embed.add_field(name = ':alarm_clock: **Check Frequency**', value = f'**Currently set to** `{settings[1][1]} minutes`\nSet the frequency of wallcheck alerts.\n```{prefix}settings checkFrequency walls <minutes>```', inline = False)
+                            embed.add_field(name = ':bell: **Reminder Frequency**', value = f'**Currently set to** `{settings[1][2]} minutes`\nSet the time after which reminders should be sent.\n```{prefix}settings reminderFrequency walls <minutes>```', inline = False)
+                            embed.add_field(name = ':exclamation: **Tag On First Alert**', value = f'**Currently set to** `{settings[1][7]}`\nIf you want the role to be tagged on the first alert/reminder, then set this to true.\n```{prefix}settings tagonfirstalert walls <on/off/true/false>```', inline = False)
                             try:
-                                r = msg.guild.get_role(settings[2][6]).mention
+                                r = msg.guild.get_role(settings[1][6]).mention
                             except:
                                 r = 'None'
-                            embed.add_field(name = ':label: **Role**', value = f"**Currently set to** {r}.\nSet which role has access to __buffer-check module__ commands.\n```{prefix}settings role buffers <mention the role>```", inline = False)
+                            embed.add_field(name = ':label: **Role**', value = f"**Currently set to** {r}.\nSet which role has access to __wall-check module__ commands.\n```{prefix}settings role walls <mention the role>```", inline = False)
                             try:
-                                ch = client.get_channel(settings[2][5]).mention
+                                ch = client.get_channel(settings[1][5]).mention
                             except:
                                 ch = 'None'
-                            embed.add_field(name = ':tv: **Channel**', value = f'**Currently set to** {ch}\nSet the channel where the alerts are posted.\n```{prefix}settings channel buffers <mention the channel>```\n\n__Note__: Some settings conditionally accept `None` as a valid input.')
+                            embed.add_field(name = ':tv: **Channel**', value = f'**Currently set to** {ch}\nSet the channel where the alerts are posted.\n```{prefix}settings channel walls <mention the channel>```\n\n__Note__: Some settings conditionally accept `None` as a valid input.')
                             embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
                             await msg.channel.send(embed = embed)
-                        elif cmd in ('on', 'enable'):
+                    elif cmdword in ('buffer', 'buffers', 'buffercheck', 'bufferchecks'):
+                        cmd = split_space(cmd).replace(' ', '')
+                        if cmd in ('on', 'enable'):
                             if msg.author.guild_permissions.administrator:
                                 with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
                                     settings = eval(file.read())
@@ -2217,6 +2200,30 @@ async def on_message(msg):
                                 embed = discord.Embed(title = ':gear: Settings - BufferCheck Alerts', description = 'You do not have permission to execute that command.', color = discord.Colour.blue())
                                 embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
                                 await msg.channel.send(embed = embed)
+                        else:
+                            with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                settings = eval(file.read())
+                            embed = discord.Embed(title = ':gear: Settings - Buffercheck Alerts', description = f'Settings for __buffer check__ related commands/features. Do `{prefix}settings <setting>` for more info.', color = discord.Colour.blue())
+                            if settings[2][0]:
+                                embed.add_field(name = ':green_circle: **Status**', value = f'**Currently set to** `ENABLED` :white_check_mark:\n__Enable/Disable__ the BufferCheck module for the bot.\n```{prefix}settings buffers <on/off/enable/disable>```', inline = False)
+                            else:
+                                embed.add_field(name = ':red_circle: **Status**', value = f'**Currently set to** `DISABLED` :x:\n__Enable/Disable__ the BufferCheck module for the bot.\n```{prefix}settings buffers <on/off/enable/disable>```', inline = False)
+
+                            embed.add_field(name = ':alarm_clock: **Check Frequency**', value = f'**Currently set to** `{settings[2][1]} minutes`\nSet the frequency of BufferCheck alerts.\n```{prefix}settings checkFrequency buffers <minutes>```', inline = False)
+                            embed.add_field(name = ':bell: **Reminder Frequency**', value = f'**Currently set to** `{settings[2][2]} minutes`\nSet the time after which reminders should be sent.\n```{prefix}settings reminderFrequency buffers <minutes>```', inline = False)
+                            embed.add_field(name = ':exclamation: **Tag On First Alert**', value = f'**Currently set to** `{settings[2][7]}`\nIf you want the role to be tagged on the first alert/reminder, then set this to true.\n```{prefix}settings tagonfirstalert buffers <on/off/true/false>```', inline = False)
+                            try:
+                                r = msg.guild.get_role(settings[2][6]).mention
+                            except:
+                                r = 'None'
+                            embed.add_field(name = ':label: **Role**', value = f"**Currently set to** {r}.\nSet which role has access to __buffer-check module__ commands.\n```{prefix}settings role buffers <mention the role>```", inline = False)
+                            try:
+                                ch = client.get_channel(settings[2][5]).mention
+                            except:
+                                ch = 'None'
+                            embed.add_field(name = ':tv: **Channel**', value = f'**Currently set to** {ch}\nSet the channel where the alerts are posted.\n```{prefix}settings channel buffers <mention the channel>```\n\n__Note__: Some settings conditionally accept `None` as a valid input.')
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
                     elif cmdword in ('checkfrequency', 'checkfreq'):
                         cmd = split_space(cmd)
                         if split_space_list(cmd)[0] in ('wall', 'walls'):
@@ -2842,6 +2849,79 @@ async def on_message(msg):
                             embed = discord.Embed(title = ':gear: Settings - Prefix', description = ':x: You do not have permission to execute that command.', color = discord.Colour.blue())
                             embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
                             await msg.channel.send(embed = embed)
+                    elif cmdword in ('tagonfirstalert', 'tagonfirstreminder'):
+                        cmd = split_space(cmd)
+                        cmdword = split_space_list(cmd)[0]
+                        if cmdword in ('wall', 'walls'):
+                            cmdword = 'Wall'
+                            n = 1
+                            logs = wallsLogsDir
+                        elif cmdword in ('buffer', 'buffers'):
+                            cmdword = 'Buffer'
+                            n = 2
+                            logs = buffersLogsDir
+                        else:
+                            cmdword = None
+                        if cmdword == None:
+                            with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                settings = eval(file.read())
+                            embed = discord.Embed(title = ':gear: Settings - TagOnFirstAlert', description = f'This option allows you to specify if you want the checker role to be tagged/mentioned on the first check alert.\n\n**For walls,** currently set to `{settings[1][7]}`\n```{prefix}settings tagonfirstalert walls <on/off/true/false>```\n\n**For buffers,** currently set to `{settings[2][7]}`\n```{prefix}settings tagonfirstalert buffers <on/off/true/false>```', color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                        else:
+                            cmd = split_space_list(split_space(cmd))[0]
+                            if cmd in ('on', 'true', 'enable'):
+                                if msg.author.guild_permissions.administrator:
+                                    with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                        settings = eval(file.read())
+                                    if settings[n][7]:
+                                        embed = discord.Embed(title = f':gear: Settings - TagOnFirstAlert - {cmdword}s', description = f':white_check_mark: __TagOnFirstAlert__ is already set to `True` for __{cmdword.lower()}-checks__.', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                        await msg.channel.send(embed = embed)
+                                    else:
+                                        settings[n][7] = True
+                                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'w+') as file:
+                                            file.write(str(settings))
+                                        with open(os.path.join(logs, str(msg.guild.id)+'.txt'), 'r+') as file:
+                                            text = file.read()
+                                            file.seek(0,0)
+                                            file.write(f':gear: **[{datetime.datetime.utcnow().strftime(dateformat)}]:** {msg.author.mention} : set TagOnFirstAlert to `True`.\n{text}')
+                                        embed = discord.Embed(title = f':gear: Settings - TagOnFirstAlert - {cmdword}s', description = f':white_check_mark: __TagOnFirstAlert__ has been set to `True` for __{cmdword.lower()}-checks__.', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                        await msg.channel.send(embed = embed)
+                                else:
+                                    embed = discord.Embed(title = f':gear: Settings - TagOnFirstAlert - {cmdword}s', description = ':x: You do not have permission to execute that command.', color = discord.Colour.blue())
+                                    embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                    await msg.channel.send(embed = embed)
+                            elif cmd in ('off', 'false', 'disable'):
+                                if msg.author.guild_permissions.administrator:
+                                    with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                        settings = eval(file.read())
+                                    if not settings[n][7]:
+                                        embed = discord.Embed(title = f':gear: Settings - TagOnFirstAlert - {cmdword}s', description = f':white_check_mark: __TagOnFirstAlert__ is already set to `False` for __{cmdword.lower()}-checks__.', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                        await msg.channel.send(embed = embed)
+                                    else:
+                                        settings[n][7] = False
+                                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'w+') as file:
+                                            file.write(str(settings))
+                                        with open(os.path.join(logs, str(msg.guild.id)+'.txt'), 'r+') as file:
+                                            text = file.read()
+                                            file.seek(0,0)
+                                            file.write(f':gear: **[{datetime.datetime.utcnow().strftime(dateformat)}]:** {msg.author.mention} : set TagOnFirstAlert to `False`.\n{text}')
+                                        embed = discord.Embed(title = f':gear: Settings - TagOnFirstAlert - {cmdword}s', description = f':white_check_mark: __TagOnFirstAlert__ has been set to `False` for __{cmdword.lower()}-checks__.', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                        await msg.channel.send(embed = embed)
+                                else:
+                                    embed = discord.Embed(title = f':gear: Settings - TagOnFirstAlert - {cmdword}s', description = ':x: You do not have permission to execute that command.', color = discord.Colour.blue())
+                                    embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                    await msg.channel.send(embed = embed)
+                            else:
+                                with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                    settings = eval(file.read())
+                                embed = discord.Embed(title = f':gear: Settings - TagOnFirstAlert - {cmdword}', description = f'**Currently set to** - `{settings[n][7]}`\n\nYou can use this option to specify if you want to mention the {cmdword.lower()}-checker role on the first alert.\n\n**Usage-**\n```{prefix}settings tagonfirstalert {cmdword.lower()} <on/off/true/false>```', color = discord.Colour.blue())
+                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                await msg.channel.send(embed = embed)
                     else:
                         with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
                             settings = eval(file.read())
@@ -2861,7 +2941,7 @@ async def on_message(msg):
                             embed.add_field(name = ':money_with_wings: **Value Management**  :x:', value = f'\n**Status** - `DISABLED`\n**Realm** - `{settings[0][1]}`\n**Daily Goal** - `{settings[0][2]} $`\n**Channel** - {ch}\n**Role** - {r}\n\n', inline = False)
 
                         if settings[1][0]:
-                            embed.add_field(name = ':alarm_clock: **Wall check Alerts**  :white_check_mark:', value = f'\n**Status** - `ENABLED`\n**Check Frequency** - `{settings[1][1]} min`\n**Reminder Frequency** - `{settings[1][2]} min`\n**Channel** - {client.get_channel(settings[1][5]).mention}\n**Role** - {msg.guild.get_role(settings[1][6]).mention}\n\n', inline = False)
+                            embed.add_field(name = ':alarm_clock: **Wall check Alerts**  :white_check_mark:', value = f'\n**Status** - `ENABLED`\n**Check Frequency** - `{settings[1][1]} min`\n**Reminder Frequency** - `{settings[1][2]} min`\n**Channel** - {client.get_channel(settings[1][5]).mention}\n**Role** - {msg.guild.get_role(settings[1][6]).mention}\n**Tag on first alert** - `{settings[1][7]}`\n\n', inline = False)
                         else:
                             try:
                                 ch = client.get_channel(settings[1][5]).mention
@@ -2871,10 +2951,10 @@ async def on_message(msg):
                                 r = msg.guild.get_role(settings[1][6]).mention
                             except:
                                 r = 'None'
-                            embed.add_field(name = ':alarm_clock: **Wall check Alerts**  :x:', value = f'\n**Status** - `DISABLED`\n**Check Frequency** - `{settings[1][1]} min`\n**Reminder Frequency** - `{settings[1][2]} min`\n**Channel** - {ch}\n**Role** - {r}\n\n', inline = False)
+                            embed.add_field(name = ':alarm_clock: **Wall check Alerts**  :x:', value = f'\n**Status** - `DISABLED`\n**Check Frequency** - `{settings[1][1]} min`\n**Reminder Frequency** - `{settings[1][2]} min`\n**Channel** - {ch}\n**Role** - {r}\n**Tag role on first alert** - `{settings[1][7]}`\n\n', inline = False)
 
                         if settings[2][0]:
-                            embed.add_field(name = ':stopwatch: **Buffer check Alerts**  :white_check_mark:', value = f'\n**Status** - `ENABLED`\n**Check Frequency** - `{settings[2][1]} min`\n**Reminder Frequency** - `{settings[2][2]} min`\n**Channel** - {client.get_channel(settings[2][5]).mention}\n**Role** - {msg.guild.get_role(settings[2][6]).mention}\n\nDo `{prefix}settings <settings>` for more info.', inline = False)
+                            embed.add_field(name = ':stopwatch: **Buffer check Alerts**  :white_check_mark:', value = f'\n**Status** - `ENABLED`\n**Check Frequency** - `{settings[2][1]} min`\n**Reminder Frequency** - `{settings[2][2]} min`\n**Channel** - {client.get_channel(settings[2][5]).mention}\n**Role** - {msg.guild.get_role(settings[2][6]).mention}\n**Tag role on first alert** - `{settings[2][7]}`\n\nDo `{prefix}settings <settings>` for more info.', inline = False)
                         else:
                             try:
                                 ch = client.get_channel(settings[2][5]).mention
@@ -2884,7 +2964,7 @@ async def on_message(msg):
                                 r = msg.guild.get_role(settings[2][6]).mention
                             except:
                                 r = 'None'
-                            embed.add_field(name = ':stopwatch: **Buffer check Alerts**  :x:', value = f'\n**Status** - `DISABLED`\n**Check Frequency** - `{settings[2][1]} min`\n**Reminder Frequency** - `{settings[2][2]} min`\n**Channel** - {ch}\n**Role** - {r}\n\nDo `{prefix}settings <settings>` for more info.', inline = False)
+                            embed.add_field(name = ':stopwatch: **Buffer check Alerts**  :x:', value = f'\n**Status** - `DISABLED`\n**Check Frequency** - `{settings[2][1]} min`\n**Reminder Frequency** - `{settings[2][2]} min`\n**Channel** - {ch}\n**Role** - {r}\n**Tag role on first alert** - `{settings[2][7]}`\n\nDo `{prefix}settings <settings>` for more info.', inline = False)
 
                         embed.add_field(name = ':grey_question: **Other**', value = f'**Prefix** - `{prefix}`', inline = False)
                         embed.set_footer(text = f"{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}", icon_url = msg.author.avatar_url)
