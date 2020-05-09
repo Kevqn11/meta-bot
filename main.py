@@ -1,6 +1,6 @@
-# -----Bot version 2.0final-----
+# -----Bot version 2.0.1-----
 # STABLE BUILD
-# Made : May 3, 20
+# Made : May 9, 20
 
 
 import discord
@@ -387,7 +387,7 @@ settingsDir = os.path.join(os.getcwd(), 'settings')
 
 @client.event
 async def on_ready():
-    print('---------Bot Version 2.0-----------')
+    print('---------Bot Version 2.0.1-----------')
     print(f'Logged in as : {client.user}')
     checkDir(valueDir)
     checkDir(valueLogsDir)
