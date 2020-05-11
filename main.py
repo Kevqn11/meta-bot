@@ -613,9 +613,19 @@ async def on_ready():
                         file.write(str(settings))
 
                 if settings[1][0]:
+                    try:
+                        exec(f'wall_alert{a.id}.cancel()', globals())
+                        exec(f'del wall_alert{a.id}', globals())
+                    except:
+                        pass
                     exec(create_wall_code(a.id, settings), globals())
 
                 if settings[2][0]:
+                    try:
+                        exec(f'buffer_alert{a.id}.cancel()', globals())
+                        exec(f'del buffer_alert{a.id}', globals())
+                    except:
+                        pass
                     exec(create_buffer_code(a.id, settings), globals())
         except:
             pass
@@ -834,9 +844,19 @@ async def on_guild_join(a):
                 file.write(str(settings))
 
         if settings[1][0]:
+            try:
+                exec(f'wall_alert{a.id}.cancel()', globals())
+                exec(f'del wall_alert{a.id}', globals())
+            except:
+                pass
             exec(create_wall_code(a.id, settings), globals())
 
         if settings[2][0]:
+            try:
+                exec(f'buffer_alert{a.id}.cancel()', globals())
+                exec(f'del buffer_alert{a.id}', globals())
+            except:
+                pass
             exec(create_buffer_code(a.id, settings), globals())
 
 @client.event
@@ -2041,6 +2061,11 @@ async def on_message(msg):
                                         file.truncate(0)
                                         file.seek(0,0)
                                         file.write(str(settings))
+                                        try:
+                                            exec(f'wall_alert{msg.guild.id}.cancel()', globals())
+                                            exec(f'del wall_alert{msg.guild.id}', globals())
+                                        except:
+                                            pass
                                         exec(create_wall_code(msg.guild.id, settings), globals())
                                         embed = discord.Embed(title = ':gear: Settings - WallCheck Alerts', description = f':white_check_mark: The WallCheck module has been set to `ENABLED`.\nAlerts will be sent in {client.get_channel(settings[1][5]).mention}.', color = discord.Colour.blue())
                                         embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
@@ -2159,6 +2184,11 @@ async def on_message(msg):
                                         file.truncate(0)
                                         file.seek(0,0)
                                         file.write(str(settings))
+                                        try:
+                                            exec(f'buffer_alert{msg.guild.id}.cancel()', globals)
+                                            exec(f'del buffer_alert{msg.guild.id}', globals)
+                                        except:
+                                            pass
                                         exec(create_buffer_code(msg.guild.id, settings), globals())
                                         embed = discord.Embed(title = ':gear: Settings - BufferCheck Alerts', description = f':white_check_mark: The BufferCheck module has been set to `ENABLED`.\nAlerts will be sent in {client.get_channel(settings[2][5]).mention}.', color = discord.Colour.blue())
                                         embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
@@ -3488,6 +3518,7 @@ async def on_reaction_add(reaction, user):
                                         else:
                                             await msg.clear_reactions()
                                         exec(f'wall_alert{msg.guild.id}.cancel()', globals())
+                                        exec(f'del wall_alert{msg.guild.id}', globals())
                                         ct = datetime.datetime.utcnow()
                                         with open(os.path.join(prefixDir, str(msg.guild.id)+'.txt'), 'r') as file:
                                             prefix = file.read()
@@ -3552,8 +3583,10 @@ async def on_reaction_add(reaction, user):
                                             await msg.clear_reactions()
                                         ct = datetime.datetime.utcnow().strftime(dateformat)
                                         exec(f'wall_alert{msg.guild.id}.cancel()', globals())
+                                        exec(f'del wall_alert{msg.guild.id}', globals())
                                         if settings[2][0]:
                                             exec(f'buffer_alert{msg.guild.id}.cancel()', globals())
+                                            exec(f'del buffer_alert{msg.guild.id}', globals())
                                         messages = await msg.channel.history(limit=30).flatten()
                                         for i in messages:
                                             if i.author.id == client.user.id:
@@ -3616,6 +3649,7 @@ async def on_reaction_add(reaction, user):
                                             else:
                                                 await msg.clear_reactions()
                                             exec(f'buffer_alert{msg.guild.id}.cancel()', globals())
+                                            exec(f'del buffer_alert{msg.guild.id}', globals())
                                             ct = datetime.datetime.utcnow()
                                             with open(os.path.join(prefixDir, str(msg.guild.id)+'.txt'), 'r') as file:
                                                 prefix = file.read()
@@ -3683,6 +3717,8 @@ async def on_reaction_add(reaction, user):
                                                 ch = client.get_channel(settings[1][5])
                                                 exec(f'wall_alert{msg.guild.id}.cancel()', globals())
                                                 exec(f'buffer_alert{msg.guild.id}.cancel()', globals())
+                                                exec(f'del wall_alert{msg.guild.id}', globals())
+                                                exec(f'del buffer_alert{msg.guild.id}', globals())
                                                 messages = await ch.history(limit=30).flatten()
                                                 for i in messages:
                                                     if i.author.id == client.user.id:
@@ -3801,6 +3837,22 @@ async def on_guild_channel_delete(ch):
             settings[2][5] = None
             with open(os.path.join(settingsDir, str(ch.guild.id)+'.txt'), 'w+') as file:
                 file.write(str(settings))
+
+
+@client.event
+async def on_guild_remove(a):
+
+    os.remove(os.path.join(settingsDir, str(a.id)+'.txt'))
+    try:
+        exec(f'wall_alert{a.id}.cancel()', globals())
+    except:
+        pass
+    try:
+        exec(f'buffer_alert{a.id}.cancel()', globals())
+    except:
+        pass
+    print(f'\nRemoved from a guild: {a.id} - {a.id}\n')
+
 
 @tasks.loop(hours = 23)
 async def daily_report():
