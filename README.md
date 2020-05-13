@@ -1,3 +1,3 @@
 # meta-bot
 Meta Factions Bot
-Branch - Master
+Branch - Better Permissions
