@@ -376,6 +376,7 @@ wallsDir = os.path.join(os.getcwd(), 'wallschecks')
 buffersDir = os.path.join(os.getcwd(), 'bufferchecks')
 prefixDir = os.path.join(os.getcwd(), 'prefixes')
 todayDir = os.path.join(os.getcwd(), 'todayadded')
+infoTxt = os.path.join(os.getcwd(), 'info.txt')
 client = discord.Client()
 
 with open('token.txt', 'r') as file:
@@ -400,6 +401,8 @@ async def on_ready():
     checkDir(prefixDir)
     checkDir(todayDir)
     print('Currently Joined Servers - ')
+    with open(infoTxt, 'w+') as file:
+        file.write(datetime.datetime.utcnow().strftime(dateformat))
 
     for a in client.guilds:
         try:
@@ -630,6 +633,10 @@ async def on_ready():
         except:
             pass
 
+    try:
+        daily_report.cancel()
+    except:
+        pass
     daily_report.start()
 @client.event
 async def on_guild_join(a):
@@ -3406,6 +3413,11 @@ async def on_message(msg):
                     embed.set_author(name = 'Credits | Meta Factions Bot', icon_url = client.user.avatar_url)
                     embed.set_footer(text = '<3')
                     await msg.channel.send(embed =embed)
+                elif cmd == 'restartinfo':
+                    with open(infoTxt, 'r') as file:
+                        text = file.read()
+                    embed = discord.Embed(title = ':gear: Info', description = f'Last login - {text}')
+                    await msg.channel.send(embed = embed)
             if msg.content == '??resetprefix':
                 if msg.author.guild_permissions.administrator:
                     with open(os.path.join(prefixDir, str(msg.guild.id)+'.txt'), 'w+') as file:
