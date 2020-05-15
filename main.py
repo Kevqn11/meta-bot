@@ -3845,10 +3845,12 @@ async def on_guild_remove(a):
     os.remove(os.path.join(settingsDir, str(a.id)+'.txt'))
     try:
         exec(f'wall_alert{a.id}.cancel()', globals())
+        exec(f'del wall_alert{a.id}', globals())
     except:
         pass
     try:
         exec(f'buffer_alert{a.id}.cancel()', globals())
+        exec(f'del buffer_alert{a.id}', globals())
     except:
         pass
     print(f'\nRemoved from a guild: {a.id} - {a.id}\n')
