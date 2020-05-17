@@ -633,10 +633,6 @@ async def on_ready():
         except:
             pass
 
-    try:
-        daily_report.cancel()
-    except:
-        pass
     daily_report.start()
 @client.event
 async def on_guild_join(a):
@@ -870,7 +866,7 @@ async def on_guild_join(a):
 async def on_message(msg):
 
 
-    print(f'[{msg.guild.name}][#{msg.channel.name}] {msg.author.name} : {msg.content}')
+    # print(f'[{msg.guild.name}][#{msg.channel.name}] {msg.author.name} : {msg.content}')
     if msg.author != client.user:
         with open(os.path.join(prefixDir, str(msg.guild.id)+'.txt'), 'r') as file:
             prefix = file.read()
@@ -1063,79 +1059,83 @@ async def on_message(msg):
                             if i == 'walls':
                                 role = msg.guild.get_role(settings[1][6])
                                 if role in msg.author.roles or msg.author.guild_permissions.administrator:
-                                    exec(f'wall_alert{msg.guild.id}.cancel()', globals())
-                                    ch = client.get_channel(settings[1][5])
                                     ct = datetime.datetime.utcnow()
-                                    messages = await ch.history(limit=30).flatten()
-                                    for i in messages:
-                                        if i.author.id == client.user.id:
-                                            if len(i.embeds) == 1:
-                                                try:
-                                                    title = i.embeds[0].title
-                                                    if split_space(title) == 'Time to check walls!':
-                                                        await i.delete()
-                                                        break
-                                                    elif title.endswith('walls clear.'):
-                                                        await i.clear_reactions()
-                                                        break
-                                                except:
-                                                    pass
-                                    with open(os.path.join(wallsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
-                                        text = file.read().split('\n')
-                                        found = False
-                                        if text == ['']:
-                                            text = [f'{target.id} 1']
-                                            score = '1'
-                                        else:
-                                            for i in range(len(text)):
-                                                if text[i].startswith(str(target.id)):
-                                                    score = str(int(split_space(text[i]))+1)
-                                                    text[i] = text[i][:19] + score
-                                                    found = True
-                                            if not found:
-                                                text.append(f'{target.id} 1')
-                                                score = '1'
-                                        file.truncate(0)
-                                        file.seek(0,0)
-                                        file.write('\n'.join(text))
-                                    with open(os.path.join(wallsLogsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
-                                        text = file.read()
-                                        file.seek(0,0)
-                                        if target.id == msg.author.id:
-                                            file.write(f":white_check_mark: **[{ct.strftime(dateformat)}]:** {target.mention}" + '\n' + text)
-                                        else:
-                                            file.write(f":white_check_mark: **[{ct.strftime(dateformat)}]:** {target.mention} ({msg.author.mention})" + '\n' + text)
-
-                                    with open(os.path.join(skinsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                                        text = file.read().split('\n')
-                                    found = False
-                                    for i in text:
-                                        if i.startswith(str(target.id)):
-                                            skin = f'https://minotar.net/avatar/{i[19:]}'
-                                            found = True
-                                            break
-                                    if not found:
-                                        skin = ''
-
-                                    embed = discord.Embed(title = f':white_check_mark: **{target.display_name}** has marked walls clear.', color = discord.Colour.green())
-                                    embed.add_field(name = 'Checked by', value = target.mention, inline = True)
-                                    embed.add_field(name = 'Score', value = score, inline = True)
                                     td = ct - datetime.datetime.strptime(settings[1][3], dateformat)
-                                    td = datetime.timedelta(days = td.days, seconds = td.seconds)
-                                    embed.add_field(name = 'Time Taken', value = str(td), inline = True)
-                                    embed.add_field(name = 'Time Checked', value = ct.strftime(dateformat))
-                                    embed.set_footer(text = msg.author.display_name, icon_url = msg.author.avatar_url)
-                                    embed.set_thumbnail(url = skin)
-                                    await msg.delete()
-                                    settings[1][3] = datetime.datetime.utcnow().strftime(dateformat)
-                                    settings[1][4] = target.id
-                                    with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'w+') as file:
-                                        file.write(str(settings))
-                                    exec(create_wall_code(msg.guild.id, settings), globals())
-                                    msg = await ch.send(embed = embed)
-                                    await msg.add_reaction('\u2705')
-                                    await msg.add_reaction('\U0001f4a3')
+                                    if td.seconds >= 10:
+                                        exec(f'wall_alert{msg.guild.id}.cancel()', globals())
+                                        exec(f'del wall_alert{msg.guild.id}', globals())
+                                        ch = client.get_channel(settings[1][5])
+                                        messages = await ch.history(limit=30).flatten()
+                                        for i in messages:
+                                            if i.author.id == client.user.id:
+                                                if len(i.embeds) == 1:
+                                                    try:
+                                                        title = i.embeds[0].title
+                                                        if split_space(title) == 'Time to check walls!':
+                                                            await i.delete()
+                                                            break
+                                                        elif title.endswith('walls clear.'):
+                                                            await i.clear_reactions()
+                                                            break
+                                                    except:
+                                                        pass
+                                        with open(os.path.join(wallsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
+                                            text = file.read().split('\n')
+                                            found = False
+                                            if text == ['']:
+                                                text = [f'{target.id} 1']
+                                                score = '1'
+                                            else:
+                                                for i in range(len(text)):
+                                                    if text[i].startswith(str(target.id)):
+                                                        score = str(int(split_space(text[i]))+1)
+                                                        text[i] = text[i][:19] + score
+                                                        found = True
+                                                if not found:
+                                                    text.append(f'{target.id} 1')
+                                                    score = '1'
+                                            file.truncate(0)
+                                            file.seek(0,0)
+                                            file.write('\n'.join(text))
+                                        with open(os.path.join(wallsLogsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
+                                            text = file.read()
+                                            file.seek(0,0)
+                                            if target.id == msg.author.id:
+                                                file.write(f":white_check_mark: **[{ct.strftime(dateformat)}]:** {target.mention}" + '\n' + text)
+                                            else:
+                                                file.write(f":white_check_mark: **[{ct.strftime(dateformat)}]:** {target.mention} ({msg.author.mention})" + '\n' + text)
 
+                                        with open(os.path.join(skinsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                            text = file.read().split('\n')
+                                        found = False
+                                        for i in text:
+                                            if i.startswith(str(target.id)):
+                                                skin = f'https://minotar.net/avatar/{i[19:]}'
+                                                found = True
+                                                break
+                                        if not found:
+                                            skin = ''
+
+                                        embed = discord.Embed(title = f':white_check_mark: **{target.display_name}** has marked walls clear.', color = discord.Colour.green())
+                                        embed.add_field(name = 'Checked by', value = target.mention, inline = True)
+                                        embed.add_field(name = 'Score', value = score, inline = True)
+                                        td = datetime.timedelta(days = td.days, seconds = td.seconds)
+                                        embed.add_field(name = 'Time Taken', value = str(td), inline = True)
+                                        embed.add_field(name = 'Time Checked', value = ct.strftime(dateformat))
+                                        embed.set_footer(text = msg.author.display_name, icon_url = msg.author.avatar_url)
+                                        embed.set_thumbnail(url = skin)
+                                        await msg.delete()
+                                        settings[1][3] = datetime.datetime.utcnow().strftime(dateformat)
+                                        settings[1][4] = target.id
+                                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'w+') as file:
+                                            file.write(str(settings))
+                                        exec(create_wall_code(msg.guild.id, settings), globals())
+                                        msg = await ch.send(embed = embed)
+                                        await msg.add_reaction('\u2705')
+                                        await msg.add_reaction('\U0001f4a3')
+                                    else:
+                                        if msg.channel.permissions_for(msg.guild.me).send_messages:
+                                            await msg.channel.send('You are doing that too quickly, try slowing down.')
                                 else:
                                     embed = discord.Embed(title = ':gear: Settings - Wall-Check', description = f'You cannot use this command because you do not have the {role.mention} role.', color = discord.Colour.blue())
                                     embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}')
@@ -1143,77 +1143,82 @@ async def on_message(msg):
                             else:
                                 role = msg.guild.get_role(settings[2][6])
                                 if role in msg.author.roles or msg.author.guild_permissions.administrator:
-                                    exec(f'buffer_alert{msg.guild.id}.cancel()', globals())
-                                    ch = client.get_channel(settings[2][5])
                                     ct = datetime.datetime.utcnow()
-                                    messages = await ch.history(limit=30).flatten()
-                                    for i in messages:
-                                        if i.author.id == client.user.id:
-                                            if len(i.embeds) == 1:
-                                                try:
-                                                    title = i.embeds[0].title
-                                                    if split_space(title) == 'Time to check buffers!':
-                                                        await i.delete()
-                                                        break
-                                                    elif title.endswith('buffers clear.'):
-                                                        await i.clear_reactions()
-                                                        break
-                                                except:
-                                                    pass
-                                    with open(os.path.join(buffersDir, str(msg.guild.id)+'.txt'), 'r+') as file:
-                                        text = file.read().split('\n')
-                                        found = False
-                                        if text == ['']:
-                                            text = [f'{target.id} 1']
-                                            score = '1'
-                                        else:
-                                            for i in range(len(text)):
-                                                if text[i].startswith(str(target.id)):
-                                                    score = str(int(split_space(text[i]))+1)
-                                                    text[i] = text[i][:19] + score
-                                                    found = True
-                                            if not found:
-                                                text.append(f'{target.id} 1')
-                                                score = '1'
-                                        file.truncate(0)
-                                        file.seek(0,0)
-                                        file.write('\n'.join(text))
-                                    with open(os.path.join(buffersLogsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
-                                        text = file.read()
-                                        file.seek(0,0)
-                                        if target.id == msg.author.id:
-                                            file.write(f":white_check_mark: **[{ct.strftime(dateformat)}]:** {target.mention}" + '\n' + text)
-                                        else:
-                                            file.write(f":white_check_mark: **[{ct.strftime(dateformat)}]:** {target.mention} ({msg.author.mention})" + '\n' + text)
-
-                                    with open(os.path.join(skinsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                                        text = file.read().split('\n')
-                                    found = False
-                                    for i in text:
-                                        if i.startswith(str(target.id)):
-                                            skin = f'https://minotar.net/avatar/{i[19:]}'
-                                            found = True
-                                            break
-                                    if not found:
-                                        skin = ''
-                                    embed = discord.Embed(title = f':white_check_mark: **{target.display_name}** has marked buffers clear.', color = discord.Colour.green())
-                                    embed.add_field(name = 'Checked by', value = target.mention, inline = True)
-                                    embed.add_field(name = 'Score', value = score, inline = True)
                                     td = ct - datetime.datetime.strptime(settings[2][3], dateformat)
-                                    td = datetime.timedelta(days = td.days, seconds = td.seconds)
-                                    embed.add_field(name = 'Time Taken', value = str(td), inline = True)
-                                    embed.add_field(name = 'Time Checked', value = ct.strftime(dateformat))
-                                    embed.set_footer(text = msg.author.display_name, icon_url = msg.author.avatar_url)
-                                    embed.set_thumbnail(url = skin)
-                                    await msg.delete()
-                                    settings[2][3] = datetime.datetime.utcnow().strftime(dateformat)
-                                    settings[2][4] = target.id
-                                    with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'w+') as file:
-                                        file.write(str(settings))
-                                    exec(create_buffer_code(msg.guild.id, settings), globals())
-                                    msg = await ch.send(embed = embed)
-                                    await msg.add_reaction('\u2705')
-                                    await msg.add_reaction('\U0001f4a3')
+                                    if td.seconds >= 10:
+                                        exec(f'buffer_alert{msg.guild.id}.cancel()', globals())
+                                        exec(f'del buffer_alert{msg.guild.id}', globals())
+                                        ch = client.get_channel(settings[2][5])
+                                        messages = await ch.history(limit=30).flatten()
+                                        for i in messages:
+                                            if i.author.id == client.user.id:
+                                                if len(i.embeds) == 1:
+                                                    try:
+                                                        title = i.embeds[0].title
+                                                        if split_space(title) == 'Time to check buffers!':
+                                                            await i.delete()
+                                                            break
+                                                        elif title.endswith('buffers clear.'):
+                                                            await i.clear_reactions()
+                                                            break
+                                                    except:
+                                                        pass
+                                        with open(os.path.join(buffersDir, str(msg.guild.id)+'.txt'), 'r+') as file:
+                                            text = file.read().split('\n')
+                                            found = False
+                                            if text == ['']:
+                                                text = [f'{target.id} 1']
+                                                score = '1'
+                                            else:
+                                                for i in range(len(text)):
+                                                    if text[i].startswith(str(target.id)):
+                                                        score = str(int(split_space(text[i]))+1)
+                                                        text[i] = text[i][:19] + score
+                                                        found = True
+                                                if not found:
+                                                    text.append(f'{target.id} 1')
+                                                    score = '1'
+                                            file.truncate(0)
+                                            file.seek(0,0)
+                                            file.write('\n'.join(text))
+                                        with open(os.path.join(buffersLogsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
+                                            text = file.read()
+                                            file.seek(0,0)
+                                            if target.id == msg.author.id:
+                                                file.write(f":white_check_mark: **[{ct.strftime(dateformat)}]:** {target.mention}" + '\n' + text)
+                                            else:
+                                                file.write(f":white_check_mark: **[{ct.strftime(dateformat)}]:** {target.mention} ({msg.author.mention})" + '\n' + text)
+
+                                        with open(os.path.join(skinsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                            text = file.read().split('\n')
+                                        found = False
+                                        for i in text:
+                                            if i.startswith(str(target.id)):
+                                                skin = f'https://minotar.net/avatar/{i[19:]}'
+                                                found = True
+                                                break
+                                        if not found:
+                                            skin = ''
+                                        embed = discord.Embed(title = f':white_check_mark: **{target.display_name}** has marked buffers clear.', color = discord.Colour.green())
+                                        embed.add_field(name = 'Checked by', value = target.mention, inline = True)
+                                        embed.add_field(name = 'Score', value = score, inline = True)
+                                        td = datetime.timedelta(days = td.days, seconds = td.seconds)
+                                        embed.add_field(name = 'Time Taken', value = str(td), inline = True)
+                                        embed.add_field(name = 'Time Checked', value = ct.strftime(dateformat))
+                                        embed.set_footer(text = msg.author.display_name, icon_url = msg.author.avatar_url)
+                                        embed.set_thumbnail(url = skin)
+                                        await msg.delete()
+                                        settings[2][3] = datetime.datetime.utcnow().strftime(dateformat)
+                                        settings[2][4] = target.id
+                                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'w+') as file:
+                                            file.write(str(settings))
+                                        exec(create_buffer_code(msg.guild.id, settings), globals())
+                                        msg = await ch.send(embed = embed)
+                                        await msg.add_reaction('\u2705')
+                                        await msg.add_reaction('\U0001f4a3')
+                                    else:
+                                        if msg.channel.permissions_for(msg.guild.me).send_messages:
+                                            await msg.channel.send('You are doing that too quickly, try slowing down.')
                                 else:
                                     embed = discord.Embed(title = ':gear: Settings - Buffer-Check', description = f'You cannot use this command because you do not have the {role.mention} role.', color = discord.Colour.blue())
                                     embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}')
@@ -1601,43 +1606,50 @@ async def on_message(msg):
                     if r in msg.author.roles or msg.author.guild_permissions.administrator:
                         if settings[1][0]:
                             ct = datetime.datetime.utcnow().strftime(dateformat)
-                            ch = client.get_channel(settings[1][5])
-                            exec(f'wall_alert{msg.guild.id}.cancel()', globals())
-                            if settings[2][0]:
-                                exec(f'buffer_alert{msg.guild.id}.cancel()', globals())
-                            messages = await ch.history(limit=30).flatten()
-                            for i in messages:
-                                if i.author.id == client.user.id:
-                                    if len(i.embeds) == 1:
-                                        try:
-                                            if split_space(i.embeds[0].title) == 'Time to check walls!':
-                                                await i.delete()
-                                                break
-                                        except:
-                                            pass
-                            embed = discord.Embed(title = '', description = '```WeeWoo! We are being raided! Help!```', color = discord.Colour.red())
-                            embed.add_field(name = 'Triggered by', value = msg.author.display_name)
-                            embed.add_field(name = 'Time', value = ct)
-                            embed.set_author(name = 'We are being raided! Help! Get online!', icon_url = 'https://www.logolynx.com/images/logolynx/6f/6f5bdc86a8c983a9a266765b10f1debd.png')
-                            embed.set_footer(text = 'stop reading this and GET ON!')
-                            embed.set_thumbnail(url = 'https://www.logolynx.com/images/logolynx/6f/6f5bdc86a8c983a9a266765b10f1debd.png')
-                            await ch.send(embed = embed)
-                            await ch.send(f'Weewoo! We are being raided! Get on! <@&{msg.guild.get_role(settings[1][6]).id}>\n'*3)
-                            with open(os.path.join(wallsLogsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
-                                text = file.read()
-                                file.seek(0,0)
-                                file.write(f':bomb: **[{ct}]:** {msg.author.mention}\n{text}')
-                            with open(os.path.join(buffersLogsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
-                                text = file.read()
-                                file.seek(0,0)
-                                file.write(f':bomb: **[{ct}]:** {msg.author.mention}\n{text}')
-                            settings[1][3] = ct
-                            settings[1][4] = msg.author.id
-                            with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'w+') as file:
-                                file.write(str(settings))
-                            exec(create_wall_code(msg.guild.id, settings), globals())
-                            if settings[2][0]:
-                                exec(create_buffer_code(msg.guild.id, settings), globals())
+                            td = ct - datetime.datetime.strptime(settings[1][3], dateformat)
+                            if td.seconds >= 10:
+                                ch = client.get_channel(settings[1][5])
+                                exec(f'wall_alert{msg.guild.id}.cancel()', globals())
+                                exec(f'del wall_alert{msg.guild.id}')
+                                if settings[2][0]:
+                                    exec(f'buffer_alert{msg.guild.id}.cancel()', globals())
+                                    exec(f'del buffer_alert{msg.guild.id}')
+                                messages = await ch.history(limit=30).flatten()
+                                for i in messages:
+                                    if i.author.id == client.user.id:
+                                        if len(i.embeds) == 1:
+                                            try:
+                                                if split_space(i.embeds[0].title) == 'Time to check walls!':
+                                                    await i.delete()
+                                                    break
+                                            except:
+                                                pass
+                                embed = discord.Embed(title = '', description = '```WeeWoo! We are being raided! Help!```', color = discord.Colour.red())
+                                embed.add_field(name = 'Triggered by', value = msg.author.display_name)
+                                embed.add_field(name = 'Time', value = ct)
+                                embed.set_author(name = 'We are being raided! Help! Get online!', icon_url = 'https://www.logolynx.com/images/logolynx/6f/6f5bdc86a8c983a9a266765b10f1debd.png')
+                                embed.set_footer(text = 'stop reading this and GET ON!')
+                                embed.set_thumbnail(url = 'https://www.logolynx.com/images/logolynx/6f/6f5bdc86a8c983a9a266765b10f1debd.png')
+                                await ch.send(embed = embed)
+                                await ch.send(f'Weewoo! We are being raided! Get on! <@&{msg.guild.get_role(settings[1][6]).id}>\n'*3)
+                                with open(os.path.join(wallsLogsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
+                                    text = file.read()
+                                    file.seek(0,0)
+                                    file.write(f':bomb: **[{ct}]:** {msg.author.mention}\n{text}')
+                                with open(os.path.join(buffersLogsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
+                                    text = file.read()
+                                    file.seek(0,0)
+                                    file.write(f':bomb: **[{ct}]:** {msg.author.mention}\n{text}')
+                                settings[1][3] = ct
+                                settings[1][4] = msg.author.id
+                                with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'w+') as file:
+                                    file.write(str(settings))
+                                exec(create_wall_code(msg.guild.id, settings), globals())
+                                if settings[2][0]:
+                                    exec(create_buffer_code(msg.guild.id, settings), globals())
+                            else:
+                                if msg.channel.permissions_for(msg.guild.me).send_messages:
+                                    await msg.channel.send('You are doing that too quickly, try slowing down.')
                         else:
                             embed = discord.Embed(title = ':gear: Settings - Walls', description = f':x: You cannot use that command because the __wall check__ module is `DISABLED`.\nTo enable the __wall check__ module, do `{prefix}settings walls on`', color = discord.Colour.blue())
                             embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
@@ -3418,6 +3430,23 @@ async def on_message(msg):
                         text = file.read()
                     embed = discord.Embed(title = ':gear: Info', description = f'Last login - {text}')
                     await msg.channel.send(embed = embed)
+                elif cmd == 'forcedailyreset':
+                    if msg.author.guild_permissions.administrator:
+                        with open(os.path.join(todayDir, str(msg.guild.id)+'.txt'), 'w+') as file:
+                            pass
+                        with open(os.path.join(valueLogsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
+                            text = file.read()
+                            file.seek(0,0)
+                            file.write(f":gear: **[{datetime.datetime.utcnow().strftime(dateformat)}]:** {msg.author.mention} : forced daily reset.\n{text}")
+                        if msg.channel.permissions_for(msg.guild.me).send_messages:
+                            embed = discord.Embed(title = 'Forced Daily Reset', description = ':white_check_mark: Daily scores have been reset.', color = discord.Colour.gold())
+                            embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                    else:
+                        if msg.channel.permissions_for(msg.guild.me).send_messages:
+                            embed = discord.Embed(title = ':gear: Daily Reset', description = ':x: You do not have permission to execute this command.', color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)\
+                            await msg.channel.send(embed = embed)
             if msg.content == '??resetprefix':
                 if msg.author.guild_permissions.administrator:
                     with open(os.path.join(prefixDir, str(msg.guild.id)+'.txt'), 'w+') as file:
@@ -3910,12 +3939,14 @@ async def daily_report():
             if not settings[0][2] == None:
                 if settings[0][0]:
                     ch = client.get_channel(settings[0][3])
+                    perms = ch.permissions_for(a.me)
                     with open(os.path.join(todayDir, str(a.id)+'.txt'), 'r') as file:
                         text = file.read().split('\n')
                     if text == ['']:
-                        embed = discord.Embed(title = 'Daily Progress Report', description = f"**Goal :** `{commas(str(settings[0][2]))}`\n\n**Value added today:** `0`\n\n*Stop slacking guys and get to work.*", color = discord.Colour.gold())
-                        embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
-                        await ch.send(embed = embed)
+                        if perms.send_messages:
+                            embed = discord.Embed(title = 'Daily Progress Report', description = f"**Goal :** `{commas(str(settings[0][2]))}`\n\n**Value added today:** `0`\n\n*Stop slacking guys and get to work.*", color = discord.Colour.gold())
+                            embed.set_footer(text = f'Daily score has been reset.\n{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
+                            await ch.send(embed = embed)
                     else:
                         text.sort(key = sortkey, reverse = True)
                         total = 0
@@ -3942,11 +3973,16 @@ async def daily_report():
                         elif p > 0:
                             message = "We need to bump up these numbers."
                         text = '\n'.join(text)
-                        embed = discord.Embed(title = 'Daily Progress Report', description = f"**Goal :** `{commas(str(settings[0][2]))}`\n\n**Value added till now :**\n`{commas(str(total))}` __{p}%__\n\n*\"{message}\"*\n\n**Top Contributers of the day - **\n{text}", color = discord.Colour.gold())
-                        embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
-                        await ch.send(embed = embed)
+                        if perms.send_messages:
+                            embed = discord.Embed(title = 'Daily Progress Report', description = f"**Goal :** `{commas(str(settings[0][2]))}`\n\n**Value added till now :**\n`{commas(str(total))}` __{p}%__\n\n*\"{message}\"*\n\n**Top Contributers of the day - **\n{text}", color = discord.Colour.gold())
+                            embed.set_footer(text = f'Daily score has been reset.\n{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
+                            await ch.send(embed = embed)
                         with open(os.path.join(todayDir, str(a.id)+'.txt'), 'w+') as file:
                             pass
+                    with open(os.path.join(valueLogsDir, str(a.id)+'.txt'), 'r+') as file:
+                        text = file.read()
+                        file.seek(0,0)
+                        file.write(f":gear: **[{datetime.datetime.utcnow().strftime(dateformat)}]:** {a.me.mention} : reset daily score.\n{text}")
         except:
             pass
 
