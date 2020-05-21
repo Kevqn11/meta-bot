@@ -885,141 +885,144 @@ async def on_message(msg):
             if msg.content.startswith(prefix):
                 cmd = split_space_list(msg.content)[0][len(prefix):].lower()
                 if cmd == 'help':
-                    # kevqn = client.get_user(268671188459454464)
-                    cmd = split_space_list(split_space(msg.content))[0].lower()
-                    if cmd == 'value':
-                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                            settings = eval(file.read())
-                        if settings[0][0]:
-                            message = '`ENABLED` :white_check_mark:'
+                    if msg.channel.permissions_for(msg.guild.me).send_messages:
+                        # kevqn = client.get_user(268671188459454464)
+                        cmd = split_space_list(split_space(msg.content))[0].lower()
+                        if cmd == 'value':
+                            with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                settings = eval(file.read())
+                            if settings[0][0]:
+                                message = '`ENABLED` :white_check_mark:'
+                            else:
+                                message = '`DISABLED` :x:'
+                            embed = discord.Embed(title = '\U0001F4D4 Help - Value', description = f"**This module is currently** {message}\n\nThis module is made specifically for the __SaicoPvP__ server. This is useful to keep track of most contributing players and then distribute the rewards accordingly or whatever.\n\n**{prefix}add** - Add value to the faction. This command accepts spawner names.\n**{prefix}remove** - Remove value from other your/other player's account.\n**{prefix}top** or  **{prefix}highscore** -  Shows the top contributers.\n**{prefix}dailygoal** - See your Faction's daily progress.\n**{prefix}history** or **{prefix}log** - Show the history of executed commands. Value addition/removal and settings updates are shown here.\n\nDo `{prefix}help <command>` to find out more.\nDo `{prefix}settings value` for more info on settings for the __value module__.", color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                        elif cmd in ('walls', 'wall'):
+                            with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                settings = eval(file.read())
+                            if settings[1][0]:
+                                message = '`ENABLED` :white_check_mark:'
+                            else:
+                                message = '`DISABLED` :x:'
+                            embed = discord.Embed(title = '\U0001F4D4 Help - Walls', description = f"**This module is currently** {message}\n\nThis module sends alerts in a specific channel. \n\n**{prefix}clear** - Mark the walls clear.\n**{prefix}weewoo** - WE ARE GETTING RAIDED!! GET ON U BASTARDS!!\n**{prefix}lastcheck** - See the most recent wallcheck.\n**{prefix}setscore** - Set a user's score to a specific value.\n**{prefix}top** or **{prefix}highscores** - See the top wall checkers.\n**{prefix}log** or **{prefix}history** - See the history of executed commands.(related to walls module)\n\nDo `{prefix}help <command>` for more info.\nDo `{prefix}settings walls` for more info about the settings for __wall check__ module.", color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                        elif cmd in ('buffers', 'buffer'):
+                            with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                settings = eval(file.read())
+                            if settings[2][0]:
+                                message = '`ENABLED` :white_check_mark:'
+                            else:
+                                message = '`DISABLED` :x:'
+                            embed = discord.Embed(title = '\U0001F4D4 Help - Buffers', description = f"**This module is currently** {message}\n\nThis module is very similar to the walls module.(some might say that i just copy pasted from the walls module but ignore that).\n\n**{prefix}clear** - Mark the buffers clear.\n**{prefix}weewoo** - WE ARE GETTING RAIDED!! GET ON U BASTARDS!!\n**{prefix}lastcheck** - See the most recent buffercheck.\n**{prefix}setscore** - Set a user's score to a specific value.\n**{prefix}top** or **{prefix}highscores** - See the top buffer checkers.\n**{prefix}log** or **{prefix}history** - See the history of executed commands.(related to buffers module)\n\nDo `{prefix}help <command>` for more info.\nDo `{prefix}settings buffers` for more info about the settings for __buffer check__ module.", color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                        elif cmd in ('last', 'lastcheck', 'recent'):
+                            embed = discord.Embed(title = f'\U0001f4d4 Help - {prefix}lastcheck', description = f'You can use this command to see the most recent wall/buffer check.\n**Usage-**\n```{prefix}lastcheck <walls/buffers>```', color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                        elif cmd == 'setscore':
+                            embed = discord.Embed(title = f'\U0001f4d4 Help - {prefix}setscore', description = f'You can use this command to set the __wall/buffer__ check score of any user.\n**Usage-**\n```{prefix}setscore <walls/buffers> <score> <mention the user>```', color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                        elif cmd == 'add':
+                            embed = discord.Embed(title = f'\U0001F4D4 Help - {prefix}add', description = f"This command is used to add value to the faction. Instead of going through the trouble to calculate how much the spawners you just added were worth, just enter what spawners you added and how many.\n**Usage**\n```{prefix}add <no. of spawners> <name of spawner>```\nThe bot accepts most shortforms. Example - `{prefix}add 15 sf` or `{prefix}add skele 10` or `{prefix}add 420k`\n\nThe spawner prices are different in different realms. So you can change your realm using `{prefix}settings realm`.", color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                        elif cmd == 'remove':
+                            embed = discord.Embed(title = f'\U0001F4D4 Help - {prefix}remove', description = f"If you've accidentally added a couple billion dollars worth of value, worry not. Use this command to remove value from your account. Or you're an admin and you want to punish someone for being an asshole, you can use the __remove__ command. \n\nThe input is similar to the {prefix}add command. Admins can @mention other players to remove value from their account.\n\n**Usage :**\n```{prefix}remove <amount> <mention the player>```", color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                        elif cmd in ('dailygoals', 'dailygoal', 'goals', 'goal'):
+                            embed = discord.Embed(title = '\U0001F4D4 - Help - Daily Goals', description = f"Set daily goals for your faction to reach. Once these goals are reached, a message is sent in the value channel. This feature comes with a command `{prefix}goal`. This shows the percentage of daily goal reached and also shows the amount added during the day till then.\n\nTo set this feature off, set the daily goal to `None`.\nTo set a custom value, do\n```{prefix}settings dailygoal <amount/None>```", color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                        elif cmd == 'clear':
+                            with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                settings = eval(file.read())
+                            ch = []
+                            try:
+                                ch.append(client.get_channel(settings[1][5]).mention)
+                            except:
+                                ch.append('None')
+                            try:
+                                ch.append(client.get_channel(settings[2][5]).mention)
+                            except:
+                                ch.append('None')
+                            r = []
+                            try:
+                                r.append(msg.guild.get_role(settings[1][6]).mention)
+                            except:
+                                r.append('None')
+                            try:
+                                r.append(msg.guild.get_role(settings[2][6]).mention)
+                            except:
+                                r.append('None')
+                            embed = discord.Embed(title = f'\U0001F4D4 Help - {prefix}clear', description = f"Use this command to mark the walls/buffers clear. If only one of these modules is enabled, then it will always clear that particular module. But if both the modules are enabled, then,\n\nTo clear the walls, do `{prefix}clear` in the walls channel (currently set to {ch[0]}) or just do `{prefix}clear walls` in any channel.\n\nTo clear the buffers, do `{prefix} clear` in the buffers channel (currently set to {ch[1]}) or just do `{prefix}clear buffers` in any channel.\n\nYou the appropriate role to mark the walls/buffers clear.\n**Walls Role**   - {r[0]}\n**Buffers Role** - {r[1]}", color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                        elif cmd == 'weewoo':
+                            with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                settings = eval(file.read())
+                            try:
+                                r = msg.guild.get_role(settings[1][6]).mention
+                            except:
+                                r = 'None'
+                            embed = discord.Embed(title = f'\U0001F4D4 Help - {prefix}weewoo', description = f"Use this command to send multiple alerts in hope that some players get on to support you in defending the base against the raiders. ~~(or you could be an asshole and do it for no reason)~~\nYou need the walls module's role to execute this command. (currently set to {r})", color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                        elif cmd in ('log', 'logs', 'history'):
+                            with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                settings = eval(file.read())
+                            ch = []
+                            try:
+                                ch.append(client.get_channel(settings[0][3]).mention)
+                            except:
+                                ch.append('None')
+                            try:
+                                ch.append(client.get_channel(settings[1][5]).mention)
+                            except:
+                                ch.append('None')
+                            try:
+                                ch.append(client.get_channel(settings[2][5]).mention)
+                            except:
+                                ch.append('None')
+                            embed = discord.Embed(title = f'\U0001F4D4 Help - {prefix}history', description = f"Use this command to see the history of the major commands executed in specific modules. Otherwise, you would have to execute the command in that module's channel or specify the module in the command.\n\nTo see the __value module's__ history, do `{prefix}history` in the value channel (currently set to {ch[0]}) or do `{prefix}history value` in any channel.\n\nTo see the __walls module's__ history, do `{prefix}history` in the walls channel (currently set to {ch[1]}) or do `{prefix}history walls` in any channel.\n\nTo see the __buffer module's__ history, do `{prefix}history` in the buffers channel (currently set to {ch[2]}) or do `{prefix}history buffers` in any channel.\n\nYou will need the module's role to view it's history.", color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                        elif cmd in ('highscores', 'highscore', 'top'):
+                            with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                settings = eval(file.read())
+                            ch = []
+                            try:
+                                ch.append(client.get_channel(settings[0][3]).mention)
+                            except:
+                                ch.append('None')
+                            try:
+                                ch.append(client.get_channel(settings[1][5]).mention)
+                            except:
+                                ch.append('None')
+                            try:
+                                ch.append(client.get_channel(settings[2][5]).mention)
+                            except:
+                                ch.append('None')
+                            embed = discord.Embed(title = f'\U0001F4D4 Help - {prefix}highscore', description = f"Use this command to see the highscores of the module.\n\nTo see the __value module's__ highscores, do `{prefix}top` in the value channel (currently set to {ch[0]}) or do `{prefix}top value` in any channel.\n\nTo see the __walls module's__ highscores, do `{prefix}top` in the walls channel (currently set to {ch[1]}) or do `{prefix}top walls` in any channel.\n\nTo see the __buffer module's__ highscores, do `{prefix}top` in the buffers channel (currently set to {ch[2]}) or do `{prefix}top buffers` in any channel.\n\nYou will need the module's role to view it's highscores.", color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
                         else:
-                            message = '`DISABLED` :x:'
-                        embed = discord.Embed(title = '\U0001F4D4 Help - Value', description = f"**This module is currently** {message}\n\nThis module is made specifically for the __SaicoPvP__ server. This is useful to keep track of most contributing players and then distribute the rewards accordingly or whatever.\n\n**{prefix}add** - Add value to the faction. This command accepts spawner names.\n**{prefix}remove** - Remove value from other your/other player's account.\n**{prefix}top** or  **{prefix}highscore** -  Shows the top contributers.\n**{prefix}dailygoal** - See your Faction's daily progress.\n**{prefix}history** or **{prefix}log** - Show the history of executed commands. Value addition/removal and settings updates are shown here.\n\nDo `{prefix}help <command>` to find out more.\nDo `{prefix}settings value` for more info on settings for the __value module__.", color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    elif cmd in ('walls', 'wall'):
-                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                            settings = eval(file.read())
-                        if settings[1][0]:
-                            message = '`ENABLED` :white_check_mark:'
-                        else:
-                            message = '`DISABLED` :x:'
-                        embed = discord.Embed(title = '\U0001F4D4 Help - Walls', description = f"**This module is currently** {message}\n\nThis module sends alerts in a specific channel. \n\n**{prefix}clear** - Mark the walls clear.\n**{prefix}weewoo** - WE ARE GETTING RAIDED!! GET ON U BASTARDS!!\n**{prefix}lastcheck** - See the most recent wallcheck.\n**{prefix}setscore** - Set a user's score to a specific value.\n**{prefix}top** or **{prefix}highscores** - See the top wall checkers.\n**{prefix}log** or **{prefix}history** - See the history of executed commands.(related to walls module)\n\nDo `{prefix}help <command>` for more info.\nDo `{prefix}settings walls` for more info about the settings for __wall check__ module.", color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    elif cmd in ('buffers', 'buffer'):
-                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                            settings = eval(file.read())
-                        if settings[2][0]:
-                            message = '`ENABLED` :white_check_mark:'
-                        else:
-                            message = '`DISABLED` :x:'
-                        embed = discord.Embed(title = '\U0001F4D4 Help - Buffers', description = f"**This module is currently** {message}\n\nThis module is very similar to the walls module.(some might say that i just copy pasted from the walls module but ignore that).\n\n**{prefix}clear** - Mark the buffers clear.\n**{prefix}weewoo** - WE ARE GETTING RAIDED!! GET ON U BASTARDS!!\n**{prefix}lastcheck** - See the most recent buffercheck.\n**{prefix}setscore** - Set a user's score to a specific value.\n**{prefix}top** or **{prefix}highscores** - See the top buffer checkers.\n**{prefix}log** or **{prefix}history** - See the history of executed commands.(related to buffers module)\n\nDo `{prefix}help <command>` for more info.\nDo `{prefix}settings buffers` for more info about the settings for __buffer check__ module.", color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    elif cmd in ('last', 'lastcheck', 'recent'):
-                        embed = discord.Embed(title = f'\U0001f4d4 Help - {prefix}lastcheck', description = f'You can use this command to see the most recent wall/buffer check.\n**Usage-**\n```{prefix}lastcheck <walls/buffers>```', color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    elif cmd == 'setscore':
-                        embed = discord.Embed(title = f'\U0001f4d4 Help - {prefix}setscore', description = f'You can use this command to set the __wall/buffer__ check score of any user.\n**Usage-**\n```{prefix}setscore <walls/buffers> <score> <mention the user>```', color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    elif cmd == 'add':
-                        embed = discord.Embed(title = f'\U0001F4D4 Help - {prefix}add', description = f"This command is used to add value to the faction. Instead of going through the trouble to calculate how much the spawners you just added were worth, just enter what spawners you added and how many.\n**Usage**\n```{prefix}add <no. of spawners> <name of spawner>```\nThe bot accepts most shortforms. Example - `{prefix}add 15 sf` or `{prefix}add skele 10` or `{prefix}add 420k`\n\nThe spawner prices are different in different realms. So you can change your realm using `{prefix}settings realm`.", color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    elif cmd == 'remove':
-                        embed = discord.Embed(title = f'\U0001F4D4 Help - {prefix}remove', description = f"If you've accidentally added a couple billion dollars worth of value, worry not. Use this command to remove value from your account. Or you're an admin and you want to punish someone for being an asshole, you can use the __remove__ command. \n\nThe input is similar to the {prefix}add command. Admins can @mention other players to remove value from their account.\n\n**Usage :**\n```{prefix}remove <amount> <mention the player>```", color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    elif cmd in ('dailygoals', 'dailygoal', 'goals', 'goal'):
-                        embed = discord.Embed(title = '\U0001F4D4 - Help - Daily Goals', description = f"Set daily goals for your faction to reach. Once these goals are reached, a message is sent in the value channel. This feature comes with a command `{prefix}goal`. This shows the percentage of daily goal reached and also shows the amount added during the day till then.\n\nTo set this feature off, set the daily goal to `None`.\nTo set a custom value, do\n```{prefix}settings dailygoal <amount/None>```", color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    elif cmd == 'clear':
-                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                            settings = eval(file.read())
-                        ch = []
-                        try:
-                            ch.append(client.get_channel(settings[1][5]).mention)
-                        except:
-                            ch.append('None')
-                        try:
-                            ch.append(client.get_channel(settings[2][5]).mention)
-                        except:
-                            ch.append('None')
-                        r = []
-                        try:
-                            r.append(msg.guild.get_role(settings[1][6]).mention)
-                        except:
-                            r.append('None')
-                        try:
-                            r.append(msg.guild.get_role(settings[2][6]).mention)
-                        except:
-                            r.append('None')
-                        embed = discord.Embed(title = f'\U0001F4D4 Help - {prefix}clear', description = f"Use this command to mark the walls/buffers clear. If only one of these modules is enabled, then it will always clear that particular module. But if both the modules are enabled, then,\n\nTo clear the walls, do `{prefix}clear` in the walls channel (currently set to {ch[0]}) or just do `{prefix}clear walls` in any channel.\n\nTo clear the buffers, do `{prefix} clear` in the buffers channel (currently set to {ch[1]}) or just do `{prefix}clear buffers` in any channel.\n\nYou the appropriate role to mark the walls/buffers clear.\n**Walls Role**   - {r[0]}\n**Buffers Role** - {r[1]}", color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    elif cmd == 'weewoo':
-                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                            settings = eval(file.read())
-                        try:
-                            r = msg.guild.get_role(settings[1][6]).mention
-                        except:
-                            r = 'None'
-                        embed = discord.Embed(title = f'\U0001F4D4 Help - {prefix}weewoo', description = f"Use this command to send multiple alerts in hope that some players get on to support you in defending the base against the raiders. ~~(or you could be an asshole and do it for no reason)~~\nYou need the walls module's role to execute this command. (currently set to {r})", color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    elif cmd in ('log', 'logs', 'history'):
-                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                            settings = eval(file.read())
-                        ch = []
-                        try:
-                            ch.append(client.get_channel(settings[0][3]).mention)
-                        except:
-                            ch.append('None')
-                        try:
-                            ch.append(client.get_channel(settings[1][5]).mention)
-                        except:
-                            ch.append('None')
-                        try:
-                            ch.append(client.get_channel(settings[2][5]).mention)
-                        except:
-                            ch.append('None')
-                        embed = discord.Embed(title = f'\U0001F4D4 Help - {prefix}history', description = f"Use this command to see the history of the major commands executed in specific modules. Otherwise, you would have to execute the command in that module's channel or specify the module in the command.\n\nTo see the __value module's__ history, do `{prefix}history` in the value channel (currently set to {ch[0]}) or do `{prefix}history value` in any channel.\n\nTo see the __walls module's__ history, do `{prefix}history` in the walls channel (currently set to {ch[1]}) or do `{prefix}history walls` in any channel.\n\nTo see the __buffer module's__ history, do `{prefix}history` in the buffers channel (currently set to {ch[2]}) or do `{prefix}history buffers` in any channel.\n\nYou will need the module's role to view it's history.", color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    elif cmd in ('highscores', 'highscore', 'top'):
-                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                            settings = eval(file.read())
-                        ch = []
-                        try:
-                            ch.append(client.get_channel(settings[0][3]).mention)
-                        except:
-                            ch.append('None')
-                        try:
-                            ch.append(client.get_channel(settings[1][5]).mention)
-                        except:
-                            ch.append('None')
-                        try:
-                            ch.append(client.get_channel(settings[2][5]).mention)
-                        except:
-                            ch.append('None')
-                        embed = discord.Embed(title = f'\U0001F4D4 Help - {prefix}highscore', description = f"Use this command to see the highscores of the module.\n\nTo see the __value module's__ highscores, do `{prefix}top` in the value channel (currently set to {ch[0]}) or do `{prefix}top value` in any channel.\n\nTo see the __walls module's__ highscores, do `{prefix}top` in the walls channel (currently set to {ch[1]}) or do `{prefix}top walls` in any channel.\n\nTo see the __buffer module's__ highscores, do `{prefix}top` in the buffers channel (currently set to {ch[2]}) or do `{prefix}top buffers` in any channel.\n\nYou will need the module's role to view it's highscores.", color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    else:
-                        embed = discord.Embed(title = '\U0001F4D4 Help', description = 'There are 3 separate modules of the bot.', color = discord.Colour.blue())
-                        embed.add_field(name = ':money_with_wings: **Value Management Module**', value = f'This module has commands related to value addition/removal. This enabled you to keep track of the contribution of each player. Do `{prefix}help value` to see a detailed page of the value module and its commands.' , inline = False)
-                        embed.add_field(name = ':alarm_clock: **Wall-Check Module**', value = f'This module has commands related to walls. You get alerted every few minutes (which you can configure) to check walls. Score is kept track of. Do `{prefix}help walls` to see a detailed page of the walls module and its commands.', inline = False)
-                        embed.add_field(name = ':stopwatch: **Buffer-Check Module**', value = f'Similar to the wall-check module, this module sends alerts to check buffers. Do `{prefix}help buffers` to see a detailed page of buffers module and its commands.', inline = False)
-                        embed.add_field(name = '**Other Commands**', value = f'Some other commands include -\n`{prefix}prefix`, `{prefix}skin`, `{prefix}invite`, `{prefix}info`.\n\nTo see detailed info about a particular command, do `{prefix}help <command>` or do the command with no arguments.', inline = False)
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
+                            embed = discord.Embed(title = '\U0001F4D4 Help', description = 'There are 3 separate modules of the bot.', color = discord.Colour.blue())
+                            embed.add_field(name = ':money_with_wings: **Value Management Module**', value = f'This module has commands related to value addition/removal. This enabled you to keep track of the contribution of each player. Do `{prefix}help value` to see a detailed page of the value module and its commands.' , inline = False)
+                            embed.add_field(name = ':alarm_clock: **Wall-Check Module**', value = f'This module has commands related to walls. You get alerted every few minutes (which you can configure) to check walls. Score is kept track of. Do `{prefix}help walls` to see a detailed page of the walls module and its commands.', inline = False)
+                            embed.add_field(name = ':stopwatch: **Buffer-Check Module**', value = f'Similar to the wall-check module, this module sends alerts to check buffers. Do `{prefix}help buffers` to see a detailed page of buffers module and its commands.', inline = False)
+                            embed.add_field(name = '**Other Commands**', value = f'Some other commands include -\n`{prefix}prefix`, `{prefix}skin`, `{prefix}invite`, `{prefix}info`.\n\nTo see detailed info about a particular command, do `{prefix}help <command>` or do the command with no arguments.', inline = False)
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
                 elif cmd == 'clear':
+                    perms = msg.channel.permissions_for(msg.guild.me)
                     if len(msg.mentions) > 1:
-                        await msg.channel.send('You can mention only one person.')
+                        if perms.send_messages:
+                            await msg.channel.send('You can mention only one person.')
                     else:
                         if len(msg.mentions) == 1:
                             target = msg.mentions[0]
@@ -1036,25 +1039,28 @@ async def on_message(msg):
                                 elif msg.channel.id == settings[2][5]:
                                     i = 'buffers'
                                 else:
-                                    embed = discord.Embed(title = 'Settings - Check Alerts', description = f'To clear the walls, either do `{prefix}clear` in {client.get_channel(settings[1][5]).mention} or do `{prefix}clear walls` in any channel the bot can see.\n\nTo clear the buffers, either do `{prefix}clear` in {client.get_channel(settings[2][5]).mention} or do `{prefix}clear buffers` in any channel the bot can see.', color = discord.Colour.blue())
-                                    embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                                    await msg.channel.send(embed = embed)
+                                    if perms.send_messages:
+                                        embed = discord.Embed(title = 'Settings - Check Alerts', description = f'To clear the walls, either do `{prefix}clear` in {client.get_channel(settings[1][5]).mention} or do `{prefix}clear walls` in any channel the bot can see.\n\nTo clear the buffers, either do `{prefix}clear` in {client.get_channel(settings[2][5]).mention} or do `{prefix}clear buffers` in any channel the bot can see.', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                        await msg.channel.send(embed = embed)
                             elif cmd == 'walls' or cmd == 'wall':
                                     i = 'walls'
                             elif cmd == 'buffer' or cmd == 'buffers':
                                     i = 'buffers'
                             else:
-                                embed = discord.Embed(title = 'Settings - Check Alerts', description = f'Unknown argument - `{cmd}`\n\nTo mark walls clear, either do `{prefix}clear` in {client.get_channel(settings[1][5]).mention} or do `{prefix}clear walls` in any channel the bot can see.\n\nTo mark the buffers clear, either do `{prefix}clear` in {client.get_channel(settings[2][5]).mention} or do `{prefix}clear buffers` in any channel the bot can see.', color = discord.Colour.blue())
-                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                                await msg.channel.send(embed = embed)
+                                if perms.send_messages:
+                                    embed = discord.Embed(title = 'Settings - Check Alerts', description = f'Unknown argument - `{cmd}`\n\nTo mark walls clear, either do `{prefix}clear` in {client.get_channel(settings[1][5]).mention} or do `{prefix}clear walls` in any channel the bot can see.\n\nTo mark the buffers clear, either do `{prefix}clear` in {client.get_channel(settings[2][5]).mention} or do `{prefix}clear buffers` in any channel the bot can see.', color = discord.Colour.blue())
+                                    embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                    await msg.channel.send(embed = embed)
                         elif settings[1][0]:
                             i = 'walls'
                         elif settings[2][0]:
                             i = 'buffers'
                         else:
-                            embed = discord.Embed(title = 'Settings - Check Alerts', description = f'This command cannot be used since both __wall & buffer__ check alerts have been turned `OFF`. To enable them, do\n```{prefix}settings <walls/buffers> on```')
-                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                            await msg.channel.send(embed = embed)
+                            if perms.send_messages:
+                                embed = discord.Embed(title = 'Settings - Check Alerts', description = f'This command cannot be used since both __wall & buffer__ check alerts have been turned `OFF`. To enable them, do\n```{prefix}settings <walls/buffers> on```')
+                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                await msg.channel.send(embed = embed)
                         if not i == False:
                             if i == 'walls':
                                 role = msg.guild.get_role(settings[1][6])
@@ -1062,23 +1068,29 @@ async def on_message(msg):
                                     ct = datetime.datetime.utcnow()
                                     td = ct - datetime.datetime.strptime(settings[1][3], dateformat)
                                     if td.seconds >= 10:
+                                        if perms.manage_messages:
+                                            await msg.delete()
                                         exec(f'wall_alert{msg.guild.id}.cancel()', globals())
                                         exec(f'del wall_alert{msg.guild.id}', globals())
                                         ch = client.get_channel(settings[1][5])
-                                        messages = await ch.history(limit=30).flatten()
-                                        for i in messages:
-                                            if i.author.id == client.user.id:
-                                                if len(i.embeds) == 1:
-                                                    try:
-                                                        title = i.embeds[0].title
-                                                        if split_space(title) == 'Time to check walls!':
-                                                            await i.delete()
-                                                            break
-                                                        elif title.endswith('walls clear.'):
-                                                            await i.clear_reactions()
-                                                            break
-                                                    except:
-                                                        pass
+                                        perms = ch.permissions_for(msg.guild.me)
+                                        if perms.read_message_history:
+                                            messages = await ch.history(limit=30).flatten()
+                                            for i in messages:
+                                                if i.author.id == client.user.id:
+                                                    if len(i.embeds) == 1:
+                                                        try:
+                                                            title = i.embeds[0].title
+                                                            if split_space(title) == 'Time to check walls!':
+                                                                if perms.manage_messages:
+                                                                    await i.delete()
+                                                                break
+                                                            elif title.endswith('walls clear.'):
+                                                                if perms.manage_messages:
+                                                                    await i.clear_reactions()
+                                                                break
+                                                        except:
+                                                            pass
                                         with open(os.path.join(wallsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
                                             text = file.read().split('\n')
                                             found = False
@@ -1104,65 +1116,72 @@ async def on_message(msg):
                                                 file.write(f":white_check_mark: **[{ct.strftime(dateformat)}]:** {target.mention}" + '\n' + text)
                                             else:
                                                 file.write(f":white_check_mark: **[{ct.strftime(dateformat)}]:** {target.mention} ({msg.author.mention})" + '\n' + text)
+                                        if perms.send_messages:
+                                            with open(os.path.join(skinsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                                text = file.read().split('\n')
+                                            found = False
+                                            for i in text:
+                                                if i.startswith(str(target.id)):
+                                                    skin = f'https://minotar.net/avatar/{i[19:]}'
+                                                    found = True
+                                                    break
+                                            if not found:
+                                                skin = ''
 
-                                        with open(os.path.join(skinsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                                            text = file.read().split('\n')
-                                        found = False
-                                        for i in text:
-                                            if i.startswith(str(target.id)):
-                                                skin = f'https://minotar.net/avatar/{i[19:]}'
-                                                found = True
-                                                break
-                                        if not found:
-                                            skin = ''
-
-                                        embed = discord.Embed(title = f':white_check_mark: **{target.display_name}** has marked walls clear.', color = discord.Colour.green())
-                                        embed.add_field(name = 'Checked by', value = target.mention, inline = True)
-                                        embed.add_field(name = 'Score', value = score, inline = True)
-                                        td = datetime.timedelta(days = td.days, seconds = td.seconds)
-                                        embed.add_field(name = 'Time Taken', value = str(td), inline = True)
-                                        embed.add_field(name = 'Time Checked', value = ct.strftime(dateformat))
-                                        embed.set_footer(text = msg.author.display_name, icon_url = msg.author.avatar_url)
-                                        embed.set_thumbnail(url = skin)
-                                        await msg.delete()
+                                            embed = discord.Embed(title = f':white_check_mark: **{target.display_name}** has marked walls clear.', color = discord.Colour.green())
+                                            embed.add_field(name = 'Checked by', value = target.mention, inline = True)
+                                            embed.add_field(name = 'Score', value = score, inline = True)
+                                            td = datetime.timedelta(days = td.days, seconds = td.seconds)
+                                            embed.add_field(name = 'Time Taken', value = str(td), inline = True)
+                                            embed.add_field(name = 'Time Checked', value = ct.strftime(dateformat))
+                                            embed.set_footer(text = msg.author.display_name, icon_url = msg.author.avatar_url)
+                                            embed.set_thumbnail(url = skin)
+                                            msg = await ch.send(embed = embed)
+                                            if perms.add_reactions:
+                                                await msg.add_reaction('\u2705')
+                                                await msg.add_reaction('\U0001f4a3')
                                         settings[1][3] = datetime.datetime.utcnow().strftime(dateformat)
                                         settings[1][4] = target.id
                                         with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'w+') as file:
                                             file.write(str(settings))
                                         exec(create_wall_code(msg.guild.id, settings), globals())
-                                        msg = await ch.send(embed = embed)
-                                        await msg.add_reaction('\u2705')
-                                        await msg.add_reaction('\U0001f4a3')
                                     else:
-                                        if msg.channel.permissions_for(msg.guild.me).send_messages:
+                                        if perms.send_messages:
                                             await msg.channel.send('You are doing that too quickly, try slowing down.')
                                 else:
-                                    embed = discord.Embed(title = ':gear: Settings - Wall-Check', description = f'You cannot use this command because you do not have the {role.mention} role.', color = discord.Colour.blue())
-                                    embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}')
-                                    await msg.channel.send(embed=embed)
+                                    if perms.send_messages:
+                                        embed = discord.Embed(title = ':gear: Settings - Wall-Check', description = f'You cannot use this command because you do not have the {role.mention} role.', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}')
+                                        await msg.channel.send(embed=embed)
                             else:
                                 role = msg.guild.get_role(settings[2][6])
                                 if role in msg.author.roles or msg.author.guild_permissions.administrator:
                                     ct = datetime.datetime.utcnow()
                                     td = ct - datetime.datetime.strptime(settings[2][3], dateformat)
                                     if td.seconds >= 10:
+                                        if perms.manage_messages:
+                                            await msg.delete()
                                         exec(f'buffer_alert{msg.guild.id}.cancel()', globals())
                                         exec(f'del buffer_alert{msg.guild.id}', globals())
                                         ch = client.get_channel(settings[2][5])
-                                        messages = await ch.history(limit=30).flatten()
-                                        for i in messages:
-                                            if i.author.id == client.user.id:
-                                                if len(i.embeds) == 1:
-                                                    try:
-                                                        title = i.embeds[0].title
-                                                        if split_space(title) == 'Time to check buffers!':
-                                                            await i.delete()
-                                                            break
-                                                        elif title.endswith('buffers clear.'):
-                                                            await i.clear_reactions()
-                                                            break
-                                                    except:
-                                                        pass
+                                        perms = ch.permissions_for(msg.guild.me)
+                                        if perms.read_message_history:
+                                            messages = await ch.history(limit=30).flatten()
+                                            for i in messages:
+                                                if i.author.id == client.user.id:
+                                                    if len(i.embeds) == 1:
+                                                        try:
+                                                            title = i.embeds[0].title
+                                                            if split_space(title) == 'Time to check buffers!':
+                                                                if perms.manage_messages:
+                                                                    await i.delete()
+                                                                break
+                                                            elif title.endswith('buffers clear.'):
+                                                                if perms.manage_messages:
+                                                                    await i.clear_reactions()
+                                                                break
+                                                        except:
+                                                            pass
                                         with open(os.path.join(buffersDir, str(msg.guild.id)+'.txt'), 'r+') as file:
                                             text = file.read().split('\n')
                                             found = False
@@ -1189,56 +1208,61 @@ async def on_message(msg):
                                             else:
                                                 file.write(f":white_check_mark: **[{ct.strftime(dateformat)}]:** {target.mention} ({msg.author.mention})" + '\n' + text)
 
-                                        with open(os.path.join(skinsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                                            text = file.read().split('\n')
-                                        found = False
-                                        for i in text:
-                                            if i.startswith(str(target.id)):
-                                                skin = f'https://minotar.net/avatar/{i[19:]}'
-                                                found = True
-                                                break
-                                        if not found:
-                                            skin = ''
-                                        embed = discord.Embed(title = f':white_check_mark: **{target.display_name}** has marked buffers clear.', color = discord.Colour.green())
-                                        embed.add_field(name = 'Checked by', value = target.mention, inline = True)
-                                        embed.add_field(name = 'Score', value = score, inline = True)
-                                        td = datetime.timedelta(days = td.days, seconds = td.seconds)
-                                        embed.add_field(name = 'Time Taken', value = str(td), inline = True)
-                                        embed.add_field(name = 'Time Checked', value = ct.strftime(dateformat))
-                                        embed.set_footer(text = msg.author.display_name, icon_url = msg.author.avatar_url)
-                                        embed.set_thumbnail(url = skin)
-                                        await msg.delete()
+                                        if perms.send_messages:
+                                            with open(os.path.join(skinsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                                text = file.read().split('\n')
+                                            found = False
+                                            for i in text:
+                                                if i.startswith(str(target.id)):
+                                                    skin = f'https://minotar.net/avatar/{i[19:]}'
+                                                    found = True
+                                                    break
+                                            if not found:
+                                                skin = ''
+                                            embed = discord.Embed(title = f':white_check_mark: **{target.display_name}** has marked buffers clear.', color = discord.Colour.green())
+                                            embed.add_field(name = 'Checked by', value = target.mention, inline = True)
+                                            embed.add_field(name = 'Score', value = score, inline = True)
+                                            td = datetime.timedelta(days = td.days, seconds = td.seconds)
+                                            embed.add_field(name = 'Time Taken', value = str(td), inline = True)
+                                            embed.add_field(name = 'Time Checked', value = ct.strftime(dateformat))
+                                            embed.set_footer(text = msg.author.display_name, icon_url = msg.author.avatar_url)
+                                            embed.set_thumbnail(url = skin)
+                                            msg = await ch.send(embed = embed)
+                                            if perms.add_reactions:
+                                                await msg.add_reaction('\u2705')
+                                                await msg.add_reaction('\U0001f4a3')
                                         settings[2][3] = datetime.datetime.utcnow().strftime(dateformat)
                                         settings[2][4] = target.id
                                         with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'w+') as file:
                                             file.write(str(settings))
                                         exec(create_buffer_code(msg.guild.id, settings), globals())
-                                        msg = await ch.send(embed = embed)
-                                        await msg.add_reaction('\u2705')
-                                        await msg.add_reaction('\U0001f4a3')
                                     else:
-                                        if msg.channel.permissions_for(msg.guild.me).send_messages:
+                                        if perms.send_messages:
                                             await msg.channel.send('You are doing that too quickly, try slowing down.')
                                 else:
-                                    embed = discord.Embed(title = ':gear: Settings - Buffer-Check', description = f'You cannot use this command because you do not have the {role.mention} role.', color = discord.Colour.blue())
-                                    embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}')
-                                    await msg.channel.send(embed=embed)
+                                    if perms.send_messages:
+                                        embed = discord.Embed(title = ':gear: Settings - Buffer-Check', description = f'You cannot use this command because you do not have the {role.mention} role.', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}')
+                                        await msg.channel.send(embed=embed)
                 elif cmd == 'add':
                     with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
                         settings = eval(file.read())
+                    perms = msg.channel.permissions_for(msg.guild.me)
                     if settings[0][0] :
                         role = msg.guild.get_role(settings[0][4])
                         if role in msg.author.roles or msg.author.guild_permissions.administrator:
                             cmdraw = split_space(msg.content)
                             cmd = split_space(msg.content).replace(' ', '').lower()
                             if cmd == '':
-                                embed = discord.Embed(title = f':gear: Help - {prefix}Add', description = f'You can use this command to add value to the faction.\n\n**Usage**\n\n```{prefix}add <no. of spawners> <spawner name>```\n__Example__ - `{prefix}add 12 blazes` or `{prefix}add sf 20`.\n\n```{prefix}add <amount>```\n*__Example__- `{prefix}add 30mil` or `{prefix}add 420k`', color = discord.Colour.blue())
-                                embed.set_footer(text=f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                                await msg.channel.send(embed = embed)
+                                if perms.send_messages:
+                                    embed = discord.Embed(title = f':gear: Help - {prefix}Add', description = f'You can use this command to add value to the faction.\n\n**Usage**\n\n```{prefix}add <no. of spawners> <spawner name>```\n__Example__ - `{prefix}add 12 blazes` or `{prefix}add sf 20`.\n\n```{prefix}add <amount>```\n*__Example__- `{prefix}add 30mil` or `{prefix}add 420k`', color = discord.Colour.blue())
+                                    embed.set_footer(text=f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                    await msg.channel.send(embed = embed)
                             else:
                                 target = msg.mentions
                                 if len(target) > 1:
-                                    await msg.channel.send('You can only mention one person.')
+                                    if perms.send_messages:
+                                        await msg.channel.send('You can only mention one person.')
                                 else:
                                     if len(target) ==1:
                                         target = target[0]
@@ -1288,7 +1312,8 @@ async def on_message(msg):
                                                     cmd = int(eval(cmd.replace(i[0], f'*{i[1]}')))
                                                     break
                                         if not pure_int(cmd):
-                                            await msg.channel.send('Invalid input.')
+                                            if perms.send_messages:
+                                                await msg.channel.send('Invalid input.')
                                         else:
                                             try:
                                                 cmd = int(eval(cmd))
@@ -1296,7 +1321,8 @@ async def on_message(msg):
                                                 pass
                                     try:
                                         if eval(str(cmd)) < 0 :
-                                            await msg.channel.send('You cannot add negative value.')
+                                            if perms.send_messages:
+                                                await msg.channel.send('You cannot add negative value.')
                                         else:
                                             with open(os.path.join(valueDir, str(msg.guild.id)+'.txt'), 'r+') as file:
                                                 text = file.read().split('\n')
@@ -1320,26 +1346,29 @@ async def on_message(msg):
                                                 file.truncate(0)
                                                 file.seek(0,0)
                                                 file.write('\n'.join(text))
-                                            with open(os.path.join(skinsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                                                text = file.read().split('\n')
-                                            found = False
-                                            for i in text:
-                                                if i.startswith(str(target.id)):
-                                                    skin = f'https://minotar.net/avatar/{i[19:]}'
-                                                    found = True
-                                                    break
-                                            if not found:
-                                                skin = ''
-                                            embed = discord.Embed(title = f':heavy_plus_sign: **{msg.author.name}** added value using ``{prefix}add``.')
-                                            embed.add_field(name = 'Added By', value = target.mention, inline = True)
-                                            embed.add_field(name = 'Added value', value = f'{cmdraw} = {commas(str(cmd))}', inline = True)
-                                            embed.add_field(name = 'Total Score', value = f'{commas(str(score))} $', inline = True)
-                                            embed.add_field(name = 'Fac Value', value = f'{commas(str(total))} $', inline = True)
-                                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                                            embed.set_thumbnail(url = skin)
+                                            if perms.manage_messages:
+                                                await msg.delete()
                                             ch = client.get_channel(settings[0][3])
-                                            await ch.send(embed = embed)
-                                            await msg.delete()
+                                            perms = ch.permissions_for(msg.guild.me)
+                                            if perms.send_messages:
+                                                with open(os.path.join(skinsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                                    text = file.read().split('\n')
+                                                found = False
+                                                for i in text:
+                                                    if i.startswith(str(target.id)):
+                                                        skin = f'https://minotar.net/avatar/{i[19:]}'
+                                                        found = True
+                                                        break
+                                                if not found:
+                                                    skin = ''
+                                                embed = discord.Embed(title = f':heavy_plus_sign: **{msg.author.name}** added value using ``{prefix}add``.')
+                                                embed.add_field(name = 'Added By', value = target.mention, inline = True)
+                                                embed.add_field(name = 'Added value', value = f'{cmdraw} = {commas(str(cmd))}', inline = True)
+                                                embed.add_field(name = 'Total Score', value = f'{commas(str(score))} $', inline = True)
+                                                embed.add_field(name = 'Fac Value', value = f'{commas(str(total))} $', inline = True)
+                                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                                embed.set_thumbnail(url = skin)
+                                                await ch.send(embed = embed)
 
                                             if target == msg.author:
                                                 with open(os.path.join(valueLogsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
@@ -1369,8 +1398,9 @@ async def on_message(msg):
                                                             text.append(f'{target.id} {cmd}')
                                                             total += cmd
                                                     if not settings[0][2] == None  and total > settings[0][2] and total - cmd < settings[0][2]:
-                                                        embed = discord.Embed(title = ':tada: We have reached our daily goal. :tada:', description = f"Good job everyone! We have reached our daily goal of **{commas(str(settings[0][2]))} $**.\nKeep up the good work. Let's see how higher we can go.\nDo `{prefix}goal` for more info.", color = discord.Colour.gold())
-                                                        await ch.send(embed = embed)
+                                                        if perms.send_messages:
+                                                            embed = discord.Embed(title = ':tada: We have reached our daily goal. :tada:', description = f"Good job everyone! We have reached our daily goal of **{commas(str(settings[0][2]))} $**.\nKeep up the good work. Let's see how higher we can go.\nDo `{prefix}goal` for more info.", color = discord.Colour.gold())
+                                                            await ch.send(embed = embed)
                                                     file.truncate(0)
                                                     file.seek(0,0)
                                                     file.write('\n'.join(text))
@@ -1378,13 +1408,15 @@ async def on_message(msg):
                                         pass
 
                         else:
-                            embed = discord.Embed(title = ':gear: Settings - Value', description = f'You cannot use that command because you do not have the {role.mention} role.', color = discord.Colour.blue())
-                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                            await msg.channel.send(embed = embed)
+                            if perms.send_messages:
+                                embed = discord.Embed(title = ':gear: Settings - Value', description = f'You cannot use that command because you do not have the {role.mention} role.', color = discord.Colour.blue())
+                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                await msg.channel.send(embed = embed)
                     else:
-                        embed = discord.Embed(title = 'Settings - Value Management', description = ':x: You cannot use that command because the __Value Management__ module has been turned `OFF`.', color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed=embed)
+                        if perms.send_messages:
+                            embed = discord.Embed(title = 'Settings - Value Management', description = ':x: You cannot use that command because the __Value Management__ module has been turned `OFF`.', color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed=embed)
                 elif cmd == 'remove':
                     with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
                         settings = eval(file.read())
