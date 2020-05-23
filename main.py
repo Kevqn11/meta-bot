@@ -256,55 +256,66 @@ def create_wall_code(id, settings):
 @tasks.loop(minutes = {float(settings[1][2])}, count = 1000)
 async def wall_alert{id}():
     ch = client.get_channel({settings[1][5]})
-    messages = await ch.history(limit=30).flatten()
-    for i in messages :
-        if i.author.id == client.user.id :
-            if len(i.embeds) == 1:
-                try:
-                    if split_space(i.embeds[0].title).startswith('Time to check walls'):
-                        await i.delete()
-                        break
-                except:
-                    pass
-    td = {settings[1][2]}*(wall_alert{id}.current_loop+1)+{settings[1][1]}
-    if td%60 == 0:
-        embed = discord.Embed(title = ':no_entry: Time to check walls!', description = f'It has been `{{td//60}} hours` since the last wall-check.', color = discord.Colour.red())
-    elif td<60:
-        embed = discord.Embed(title = ':no_entry: Time to check walls!', description = f'It has been `{{td}} minutes` since the last wall-check.', color = discord.Colour.red())
-    else:
-        embed = discord.Embed(title = ':no_entry: Time to check walls!', description = f'It has been `{{td//60}} hours and {{td%60}} minutes` since the last wall-check.', color = discord.Colour.red())
-    embed.set_footer(text = f'''Wall-Check Alert | {{datetime.datetime.utcnow().strftime("%a %d %b '%y at %H:%M:%S GMT")}}''')
-    msg = await ch.send(content = 'Check now <@&{settings[1][6]}> !!', embed = embed)
-    await msg.add_reaction('\U00002705')
-    await msg.add_reaction('\U0001F4A3')
+    perms = client.permissions_in(ch)
+    if perms.read_message_history:
+        messages = await ch.history(limit=30).flatten()
+        for i in messages :
+            if i.author.id == client.user.id :
+                if len(i.embeds) == 1:
+                    try:
+                        if split_space(i.embeds[0].title).startswith('Time to check walls'):
+                            if perms.manage_messages:
+                                await i.delete()
+                            break
+                    except:
+                        pass
+    if perms.send_messages:
+        td = {settings[1][2]}*(wall_alert{id}.current_loop+1)+{settings[1][1]}
+        if td%60 == 0:
+            embed = discord.Embed(title = ':no_entry: Time to check walls!', description = f'It has been `{{td//60}} hours` since the last wall-check.', color = discord.Colour.red())
+        elif td<60:
+            embed = discord.Embed(title = ':no_entry: Time to check walls!', description = f'It has been `{{td}} minutes` since the last wall-check.', color = discord.Colour.red())
+        else:
+            embed = discord.Embed(title = ':no_entry: Time to check walls!', description = f'It has been `{{td//60}} hours and {{td%60}} minutes` since the last wall-check.', color = discord.Colour.red())
+        embed.set_footer(text = f'''Wall-Check Alert | {{datetime.datetime.utcnow().strftime("%a %d %b '%y at %H:%M:%S GMT")}}''')
+        msg = await ch.send(content = 'Check now <@&{settings[1][6]}> !!', embed = embed)
+        if perms.add_reactions:
+            await msg.add_reaction('\U00002705')
+            await msg.add_reaction('\U0001F4A3')
 
 @wall_alert{id}.before_loop
 async def before_wall{id}():
     await client.wait_until_ready()
     await asyncio.sleep({settings[1][1]*60})
     ch = client.get_channel({settings[1][5]})
-    messages = await ch.history(limit=30).flatten()
-    for i in messages :
-        if i.author.id == client.user.id:
-            if len(i.embeds) == 1:
-                try:
-                    title = i.embeds[0].title
-                    if split_space(title).startswith('Time to check walls'):
-                        await i.delete()
-                        break
-                    elif title.endswith('walls clear.'):
-                        await i.clear_reactions()
-                        break
-                except:
-                    pass
-    embed = discord.Embed(title = ':warning: Time to check walls!', description = 'It has been `{settings[1][1]} minutes` since the last wall-check.', color = discord.Colour.gold())
-    embed.set_footer(text = f'''Wall-Check Alert | {{datetime.datetime.utcnow().strftime("%a %d %b '%y at %H:%M:%S GMT")}}''')
-    if {settings[1][7]}:
-        msg = await ch.send(content = 'Check now <@&{settings[1][6]}>', embed = embed)
-    else:
-        msg = await ch.send(embed = embed)
-    await msg.add_reaction('\U00002705')
-    await msg.add_reaction('\U0001F4A3')
+    perms = client.permissions_in(ch)
+    if perms.read_message_history:
+        messages = await ch.history(limit=30).flatten()
+        for i in messages :
+            if i.author.id == client.user.id:
+                if len(i.embeds) == 1:
+                    try:
+                        title = i.embeds[0].title
+                        if split_space(title).startswith('Time to check walls'):
+                            if perms.manage_messages:
+                                await i.delete()
+                            break
+                        elif title.endswith('walls clear.'):
+                            if perms.manage_messages:
+                                await i.clear_reactions()
+                            break
+                    except:
+                        pass
+    if perms.send_messages:
+        embed = discord.Embed(title = ':warning: Time to check walls!', description = 'It has been `{settings[1][1]} minutes` since the last wall-check.', color = discord.Colour.gold())
+        embed.set_footer(text = f'''Wall-Check Alert | {{datetime.datetime.utcnow().strftime("%a %d %b '%y at %H:%M:%S GMT")}}''')
+        if {settings[1][7]}:
+            msg = await ch.send(content = 'Check now <@&{settings[1][6]}>', embed = embed)
+        else:
+            msg = await ch.send(embed = embed)
+        if perms.add_reactions:
+            await msg.add_reaction('\U00002705')
+            await msg.add_reaction('\U0001F4A3')
     await asyncio.sleep({settings[1][2]*60})
 
 wall_alert{id}.start()"""
@@ -315,54 +326,65 @@ def create_buffer_code(id, settings):
 @tasks.loop(minutes = {float(settings[2][2])}, count = 1000)
 async def buffer_alert{id}():
     ch = client.get_channel({settings[2][5]})
-    messages = await ch.history(limit=50).flatten()
-    for i in messages :
-        if i.author.id == client.user.id :
-            if len(i.embeds) == 1:
-                try:
-                    if split_space(i.embeds[0].title).startswith('Time to check buffers'):
-                        await i.delete()
-                        break
-                except:
-                    pass
-    td = {settings[2][2]}*(buffer_alert{id}.current_loop+1)+{settings[2][1]}
-    if td%60 == 0:
-        embed = discord.Embed(title = ':no_entry: Time to check buffers!', description = f'It has been `{{td//60}} hours` since the last buffer-check.', color = discord.Colour.red())
-    elif td<60:
-        embed = discord.Embed(title = ':no_entry: Time to check buffers!', description = f'It has been `{{td}} minutes` since the last buffer-check.', color = discord.Colour.red())
-    else:
-        embed = discord.Embed(title = ':no_entry: Time to check buffers!', description = f'It has been `{{td//60}} hours and {{td%60}} minutes` since the last buffer-check.', color = discord.Colour.red())
-    embed.set_footer(text = f'''Buffer-Check Alert | {{datetime.datetime.utcnow().strftime("%a %d %b '%y at %H:%M:%S GMT")}}''')
-    msg = await ch.send(content = 'Check now <@&{settings[2][6]}> !!', embed = embed)
-    await msg.add_reaction('\U00002705')
-    await msg.add_reaction('\U0001F4A3')
+    perms = client.permissions_in(ch)
+    if perms.read_message_history:
+        messages = await ch.history(limit=50).flatten()
+        for i in messages :
+            if i.author.id == client.user.id :
+                if len(i.embeds) == 1:
+                    try:
+                        if split_space(i.embeds[0].title).startswith('Time to check buffers'):
+                            if perms.manage_messages:
+                                await i.delete()
+                            break
+                    except:
+                        pass
+    if perms.send_messages:
+        td = {settings[2][2]}*(buffer_alert{id}.current_loop+1)+{settings[2][1]}
+        if td%60 == 0:
+            embed = discord.Embed(title = ':no_entry: Time to check buffers!', description = f'It has been `{{td//60}} hours` since the last buffer-check.', color = discord.Colour.red())
+        elif td<60:
+            embed = discord.Embed(title = ':no_entry: Time to check buffers!', description = f'It has been `{{td}} minutes` since the last buffer-check.', color = discord.Colour.red())
+        else:
+            embed = discord.Embed(title = ':no_entry: Time to check buffers!', description = f'It has been `{{td//60}} hours and {{td%60}} minutes` since the last buffer-check.', color = discord.Colour.red())
+        embed.set_footer(text = f'''Buffer-Check Alert | {{datetime.datetime.utcnow().strftime("%a %d %b '%y at %H:%M:%S GMT")}}''')
+        msg = await ch.send(content = 'Check now <@&{settings[2][6]}> !!', embed = embed)
+        if perms.add_reactions:
+            await msg.add_reaction('\U00002705')
+            await msg.add_reaction('\U0001F4A3')
 
 @buffer_alert{id}.before_loop
 async def before_buffer{id}():
     await client.wait_until_ready()
     await asyncio.sleep({settings[2][1]*60})
     ch = client.get_channel({settings[2][5]})
-    messages = await ch.history(limit=50).flatten()
-    for i in messages :
-        if i.author.id == client.user.id:
-            if len(i.embeds) == 1:
-                try:
-                    if split_space(i.embeds[0].title).startswith('Time to check buffers'):
-                        await i.delete()
-                        break
-                    elif title.endswith('buffers clear.'):
-                        await i.clear_reactions()
-                        break
-                except:
-                    pass
-    embed = discord.Embed(title = ':warning: Time to check buffers!', description = 'It has been `{settings[2][1]} minutes` since the last buffer-check.', color = discord.Colour.gold())
-    embed.set_footer(text = f'''Buffer-Check Alert | {{datetime.datetime.utcnow().strftime("%a %d %b '%y at %H:%M:%S GMT")}}''')
-    if {settings[2][7]}:
-        msg = await ch.send(content = 'Check now <@&{settings[2][6]}>', embed = embed)
-    else:
-        msg = await ch.send(embed = embed)
-    await msg.add_reaction('\U00002705')
-    await msg.add_reaction('\U0001F4A3')
+    perms = client.permissions_in(ch)
+    if perms.read_message_history:
+        messages = await ch.history(limit=50).flatten()
+        for i in messages :
+            if i.author.id == client.user.id:
+                if len(i.embeds) == 1:
+                    try:
+                        if split_space(i.embeds[0].title).startswith('Time to check buffers'):
+                            if perms.manage_messages:
+                                await i.delete()
+                            break
+                        elif title.endswith('buffers clear.'):
+                            if perms.manage_messages:
+                                await i.clear_reactions()
+                            break
+                    except:
+                        pass
+    if perms.send_messages:
+        embed = discord.Embed(title = ':warning: Time to check buffers!', description = 'It has been `{settings[2][1]} minutes` since the last buffer-check.', color = discord.Colour.gold())
+        embed.set_footer(text = f'''Buffer-Check Alert | {{datetime.datetime.utcnow().strftime("%a %d %b '%y at %H:%M:%S GMT")}}''')
+        if {settings[2][7]}:
+            msg = await ch.send(content = 'Check now <@&{settings[2][6]}>', embed = embed)
+        else:
+            msg = await ch.send(embed = embed)
+        if perms.add_reactions:
+            await msg.add_reaction('\U00002705')
+            await msg.add_reaction('\U0001F4A3')
     await asyncio.sleep({settings[2][2]*60})
 
 buffer_alert{id}.start()"""
@@ -439,12 +461,10 @@ async def on_ready():
             if found:
                 for i in a.text_channels:
                     if i.name =='value-added':
-                        try:
+                        if
                             embed = discord.Embed(title = ':gear: Not enough permissions.', description = 'The bot does not have the required permissions. Re-invite the bot using this [link](https://discordapp.com/api/oauth2/authorize?client_id=637575751583137822&permissions=268659792&scope=bot) or just give the bot admin.', color = discord.Colour.blue())
                             await i.send(embed = embed)
                             break
-                        except:
-                            pass
             else:
                 with open(os.path.join(prefixDir, str(a.id)+'.txt'), 'r') as file:
                     prefix = file.read()
@@ -853,6 +873,7 @@ async def on_guild_join(a):
             except:
                 pass
             exec(create_wall_code(a.id, settings), globals())
+
 
         if settings[2][0]:
             try:
