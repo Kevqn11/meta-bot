@@ -461,7 +461,7 @@ async def on_ready():
             if found:
                 for i in a.text_channels:
                     if i.name =='value-added':
-                        if
+                        if i.permissions_for(a.me).send_messages:
                             embed = discord.Embed(title = ':gear: Not enough permissions.', description = 'The bot does not have the required permissions. Re-invite the bot using this [link](https://discordapp.com/api/oauth2/authorize?client_id=637575751583137822&permissions=268659792&scope=bot) or just give the bot admin.', color = discord.Colour.blue())
                             await i.send(embed = embed)
                             break
@@ -478,16 +478,18 @@ async def on_ready():
                             for i in a.text_channels:
                                 if i.name == 'value-added':
                                     found = True
-                                    embed = discord.Embed(title = ':gear: Settings - Channel - Value Management', description = f'Could not find the previously set value channel, so this channel has been automatically selected and will be used in the future to post embeds regarding value addition/removal.\n\nTo set a different channel for value embeds, do\n```{prefix}settings channel value <mention the channel>```', color = discord.Colour.blue())
-                                    embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
-                                    await i.send(embed = embed)
+                                    if i.permissions_for(a.me).send_messages:
+                                        embed = discord.Embed(title = ':gear: Settings - Channel - Value Management', description = f'Could not find the previously set value channel, so this channel has been automatically selected and will be used in the future to post embeds regarding value addition/removal.\n\nTo set a different channel for value embeds, do\n```{prefix}settings channel value <mention the channel>```', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
+                                        await i.send(embed = embed)
                                     settings[0][3] = i.id
                                     break
                             if not found:
-                                ch = await a.create_text_channel(name = 'value-added')
-                                embed = discord.Embed(title = f'Settings - Channel - Value Management', description = f'Could not find the previously set value channel, so this channel has been created and will be used in the future to post embeds regarding value addition.\n\nTo set a different channel for value embeds, do\n```{prefix}settings channel value <mention the channel>```', color = discord.Colour.blue())
-                                embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
-                                await ch.send(embed=embed)
+                                if a.me.guild_permissions.manage_channels:
+                                    ch = await a.create_text_channel(name = 'value-added')
+                                    embed = discord.Embed(title = f'Settings - Channel - Value Management', description = f'Could not find the previously set value channel, so this channel has been created and will be used in the future to post embeds regarding value addition.\n\nTo set a different channel for value embeds, do\n```{prefix}settings channel value <mention the channel>```', color = discord.Colour.blue())
+                                    embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
+                                    await ch.send(embed=embed)
                                 settings[0][3] = ch.id
                             change = True
                         if a.get_role(settings[0][4]) == None:
@@ -496,36 +498,45 @@ async def on_ready():
                             for i in a.roles:
                                 if i.name == 'Faction Member':
                                     found = True
-                                    embed = discord.Embed(title = ':gear: Settings - Role - Value', description = f'Could not find previously set role for __value module__.\nTo overcome this issue, the {i.mention} has been selected.\n\nTo change the role for __value module__,\n```{prefix}settings role value <mention the role>```', color = discord.Colour.blue())
-                                    embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}')
-                                    await ch.send(embed = embed)
+                                    perms = ch.permissions_for(a.me)
+                                    if perms.send_messages:
+                                        embed = discord.Embed(title = ':gear: Settings - Role - Value', description = f'Could not find previously set role for __value module__.\nTo overcome this issue, the {i.mention} has been selected.\n\nTo change the role for __value module__,\n```{prefix}settings role value <mention the role>```', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}')
+                                        await ch.send(embed = embed)
                                     settings[0][4] = i.id
                                     change = True
-                                    await ch.set_permissions(i, read_messages = True, send_messages = True)
+                                    if perms.manage_roles:
+                                        await ch.set_permissions(i, read_messages = True, send_messages = True)
                             if not found:
-                                r = await a.create_role(name = 'Faction Member')
-                                embed = discord.Embed(title = ':gear: Settings - Role - Value', description = f'Could not find previously set role for __value module__.\nTo overcome this issue, the {r.mention} has been created.\n\nTo change the role for __value module__,\n```{prefix}settings role value <mention the role>```', color = discord.Colour.blue())
-                                embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}')
-                                await ch.send(embed = embed)
-                                settings[0][4] = r.id
-                                change = True
-                                await ch.set_permissions(r, read_messages = True, send_messages = True)
+                                if a.me.guild_permissions.manage_roles:
+                                    r = await a.create_role(name = 'Faction Member')
+                                    perms = ch.permissions_for(a.me)
+                                    if perms.send_messages:
+                                        embed = discord.Embed(title = ':gear: Settings - Role - Value', description = f'Could not find previously set role for __value module__.\nTo overcome this issue, the {r.mention} has been created.\n\nTo change the role for __value module__,\n```{prefix}settings role value <mention the role>```', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}')
+                                        await ch.send(embed = embed)
+                                    settings[0][4] = r.id
+                                    change = True
+                                    if perms.manage_roles:
+                                        await ch.set_permissions(r, read_messages = True, send_messages = True)
                     if settings[1][0]:
                         if client.get_channel(settings[1][5]) == None:
                             found = False
                             for i in a.text_channels:
                                 if i.name == 'wall-check':
                                     found = True
-                                    embed = discord.Embed(title = ':gear: Settings - Channel - Wall-Checks', description = f'Could not find the previously set walls channel, so this channel has been automatically selected and will be used in the future for wall-check alerts.\n\nTo set a different walls channel, do\n```{prefix}settings channel walls <mention the channel>```', color = discord.Colour.blue())
-                                    embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
-                                    await i.send(embed = embed)
+                                    if i.permissions_for(a.me).send_messages:
+                                        embed = discord.Embed(title = ':gear: Settings - Channel - Wall-Checks', description = f'Could not find the previously set walls channel, so this channel has been automatically selected and will be used in the future for wall-check alerts.\n\nTo set a different walls channel, do\n```{prefix}settings channel walls <mention the channel>```', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
+                                        await i.send(embed = embed)
                                     settings[1][5] = i.id
                                     break
                             if not found:
-                                ch = await a.create_text_channel(name = 'wall-check')
-                                embed = discord.Embed(title = f'Settings - Channel - Wall-Checks', description = f'Could not find the previously set walls channel, so this channel has been created and will be used in the future for wall-check alerts.\n\nTo set a different walls channel, do\n```{prefix}settings channel walls <mention the channel>```', color = discord.Colour.blue())
-                                embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
-                                await ch.send(embed=embed)
+                                if a.me.guild_permissions.manage_channels:
+                                    ch = await a.create_text_channel(name = 'wall-check')
+                                    embed = discord.Embed(title = f'Settings - Channel - Wall-Checks', description = f'Could not find the previously set walls channel, so this channel has been created and will be used in the future for wall-check alerts.\n\nTo set a different walls channel, do\n```{prefix}settings channel walls <mention the channel>```', color = discord.Colour.blue())
+                                    embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
+                                    await ch.send(embed=embed)
                                 settings[1][5] = ch.id
                             change = True
                         if a.get_role(settings[1][6]) == None:
@@ -534,20 +545,27 @@ async def on_ready():
                             for i in a.roles:
                                 if i.name == 'Faction Member':
                                     found = True
-                                    embed = discord.Embed(title = ':gear: Settings - Role - Wall-Checks', description = f'Could not find previously set role for __wall-check module__.\nTo overcome this issue, the {i.mention} has been selected.\n\nTo change the role for __wall-check module__,\n```{prefix}settings role walls <mention the role>```', color = discord.Colour.blue())
-                                    embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}')
-                                    await ch.send(embed = embed)
+                                    perms = ch.permissions_for(a.me)
+                                    if perms.send_messages:
+                                        embed = discord.Embed(title = ':gear: Settings - Role - Wall-Checks', description = f'Could not find previously set role for __wall-check module__.\nTo overcome this issue, the {i.mention} has been selected.\n\nTo change the role for __wall-check module__,\n```{prefix}settings role walls <mention the role>```', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}')
+                                        await ch.send(embed = embed)
                                     settings[1][6] = i.id
                                     change = True
-                                    await ch.set_permissions(i, read_messages = True, send_messages = True)
+                                    if perms.manage_roles:
+                                        await ch.set_permissions(i, read_messages = True, send_messages = True)
                             if not found:
-                                r = await a.create_role(name = 'Faction Member')
-                                embed = discord.Embed(title = ':gear: Settings - Role - Wall-Checks', description = f'Could not find previously set role for __wall-check module__.\nTo overcome this issue, the {r.mention} has been created.\n\nTo change the role for __wall-check module__,\n```{prefix}settings role walls <mention the role>```', color = discord.Colour.blue())
-                                embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}')
-                                await ch.send(embed = embed)
-                                settings[1][6] = r.id
-                                change = True
-                                await ch.set_permissions(r, read_messages = True, send_messages = True)
+                                if a.me.guild_permissions.manage_roles:
+                                    r = await a.create_role(name = 'Faction Member')
+                                    perms = ch.permissions_for(a.me)
+                                    if perms.send_messages:
+                                        embed = discord.Embed(title = ':gear: Settings - Role - Wall-Checks', description = f'Could not find previously set role for __wall-check module__.\nTo overcome this issue, the {r.mention} has been created.\n\nTo change the role for __wall-check module__,\n```{prefix}settings role walls <mention the role>```', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}')
+                                        await ch.send(embed = embed)
+                                    settings[1][6] = r.id
+                                    change = True
+                                    if perms.manage_roles:
+                                        await ch.set_permissions(r, read_messages = True, send_messages = True)
                         if settings[1][3] == None:
                             settings[1][3] = datetime.datetime.utcnow().strftime(dateformat)
                             change = True
@@ -557,16 +575,18 @@ async def on_ready():
                             for i in a.text_channels:
                                 if i.name == 'buffer-check':
                                     found = True
-                                    embed = discord.Embed(title = ':gear: Settings - Channel - Buffer-Checks', description = f'Could not find the previously set buffers channel, so this channel has been automatically selected and will be used in the future for buffer-check alerts.\n\nTo set a different buffers channel, do\n```{prefix}settings channel buffers <mention the channel>```', color = discord.Colour.blue())
-                                    embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
-                                    await i.send(embed = embed)
+                                    if i.permissions_for(a.me).send_messages:
+                                        embed = discord.Embed(title = ':gear: Settings - Channel - Buffer-Checks', description = f'Could not find the previously set buffers channel, so this channel has been automatically selected and will be used in the future for buffer-check alerts.\n\nTo set a different buffers channel, do\n```{prefix}settings channel buffers <mention the channel>```', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
+                                        await i.send(embed = embed)
                                     settings[2][5] = i.id
                                     break
                             if not found:
-                                ch = await a.create_text_channel(name = 'buffer-check')
-                                embed = discord.Embed(title = f'Settings - Channel - Buffer-Checks', description = f'Could not find the previously set buffers channel, so this channel has been created and will be used in the future for buffer-check alerts.\n\nTo set a different buffers channel, do\n```{prefix}settings channel buffers <mention the channel>```', color = discord.Colour.blue())
-                                embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
-                                await ch.send(embed=embed)
+                                if a.me.guild_permissions.manage_channels:
+                                    ch = await a.create_text_channel(name = 'buffer-check')
+                                    embed = discord.Embed(title = f'Settings - Channel - Buffer-Checks', description = f'Could not find the previously set buffers channel, so this channel has been created and will be used in the future for buffer-check alerts.\n\nTo set a different buffers channel, do\n```{prefix}settings channel buffers <mention the channel>```', color = discord.Colour.blue())
+                                    embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
+                                    await ch.send(embed=embed)
                                 settings[2][5] = ch.id
                             change = True
                         if a.get_role(settings[2][6]) == None:
@@ -575,20 +595,27 @@ async def on_ready():
                             for i in a.roles:
                                 if i.name == 'Faction Member':
                                     found = True
-                                    embed = discord.Embed(title = ':gear: Settings - Role - Buffer-Checks', description = f'Could not find previously set role for __buffer-check module__.\nTo overcome this issue, the {i.mention} has been selected.\n\nTo change the role for __buffer-check module__,\n```{prefix}settings role buffers <mention the role>```', color = discord.Colour.blue())
-                                    embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}')
-                                    await ch.send(embed = embed)
+                                    perms = ch.permissions_for(a.me)
+                                    if perm.send_messages:
+                                        embed = discord.Embed(title = ':gear: Settings - Role - Buffer-Checks', description = f'Could not find previously set role for __buffer-check module__.\nTo overcome this issue, the {i.mention} has been selected.\n\nTo change the role for __buffer-check module__,\n```{prefix}settings role buffers <mention the role>```', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}')
+                                        await ch.send(embed = embed)
                                     settings[2][6] = i.id
                                     change = True
-                                    await ch.set_permissions(i, read_messages = True, send_messages = True)
+                                    if perms.manage_roles:
+                                        await ch.set_permissions(i, read_messages = True, send_messages = True)
                             if not found:
-                                r = await a.create_role(name = 'Faction Member')
-                                embed = discord.Embed(title = ':gear: Settings - Role - Buffer-Checks', description = f'Could not find previously set role for __buffer-check module__.\nTo overcome this issue, the {r.mention} has been created.\n\nTo change the role for __buffer-check module__,\n```{prefix}settings role buffers <mention the role>```', color = discord.Colour.blue())
-                                embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}')
-                                await ch.send(embed = embed)
-                                settings[2][6] = r.id
-                                change = True
-                                await ch.set_permissions(r, read_messages = True, send_messages = True)
+                                if a.me.guild_permissions.manage_roles:
+                                    r = await a.create_role(name = 'Faction Member')
+                                    perms = ch.permissions_for(a.me)
+                                    if perms.manage_roles:
+                                        await ch.set_permissions(r, read_messages = True, send_messages = True)
+                                    if perms.send_messages:
+                                        embed = discord.Embed(title = ':gear: Settings - Role - Buffer-Checks', description = f'Could not find previously set role for __buffer-check module__.\nTo overcome this issue, the {r.mention} has been created.\n\nTo change the role for __buffer-check module__,\n```{prefix}settings role buffers <mention the role>```', color = discord.Colour.blue())
+                                        embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}')
+                                        await ch.send(embed = embed)
+                                    settings[2][6] = r.id
+                                    change = True
                         if settings[2][3] == None:
                             settings[2][3] = datetime.datetime.utcnow().strftime(dateformat)
                             change = True
@@ -608,6 +635,7 @@ async def on_ready():
                             settings[0][3] = i.id
                             break
                     if not found:
+                        if a.me.guild_permissions.manage_channels:
                         ch = await a.create_text_channel(name = 'value-added')
                         # embed = discord.Embed(title = f'Settings - Channel - Value Management', description = f'Could not find the previously set value channel, so this channel has been created and will be used in the future to post embeds regarding value addition.\n\nTo set a different channel for value embeds, do\n```{prefix}settings channel value <mention the channel>```', color = discord.Colour.blue())
                         # embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = client.user.avatar_url)
@@ -623,15 +651,18 @@ async def on_ready():
                             # await ch.send(embed = embed)
                             settings[0][4] = i.id
                             change = True
-                            await ch.set_permissions(i, read_messages = True, send_messages = True)
+                            if ch.permissions_for(a.me).manage_roles:
+                                await ch.set_permissions(i, read_messages = True, send_messages = True)
                     if not found:
-                        r = await a.create_role(name = 'Faction Member')
+                        if a.me.guild_permissions.manage_roles:
+                            r = await a.create_role(name = 'Faction Member')
+                            if ch.permissions_for(a.me).manage_roles:
+                                await ch.set_permissions(r, read_messages = True, send_messages = True)
                         # embed = discord.Embed(title = ':gear: Settings - Role - Value', description = f'Could not find previously set role for __value module__.\nTo overcome this issue, the {r.mention} has been created.\n\nTo change the role for __value module__,\n```{prefix}settings role value <mention the role>```', color = discord.Colour.blue())
                         # embed.set_footer(text = f'{client.user.name} | {datetime.datetime.utcnow().strftime(dateformat)}')
                         # await ch.send(embed = embed)
                         settings[0][4] = r.id
                         change = True
-                        await ch.set_permissions(r, read_messages = True, send_messages = True)
                     with open(os.path.join(settingsDir, str(a.id)+'.txt'), 'w+') as file:
                         file.write(str(settings))
 
