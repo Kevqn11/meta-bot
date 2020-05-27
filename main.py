@@ -1780,153 +1780,156 @@ async def on_message(msg):
                         embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
                         await msg.channel.send(embed = embed)
                 elif cmd in ('last', 'recent', 'lastcheck'):
-                    with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                        settings = eval(file.read())
-                    if settings[1][0] and settings[2][0]:
-                        cmd = split_space_list(split_space(msg.content))[0].lower()
-                        if cmd in ('wall', 'walls'):
-                            cmd = 'walls'
-                        elif cmd in ('buffer', 'buffers'):
-                            cmd = 'buffers'
-                        elif msg.channel.id == settings[1][5]:
-                            cmd = 'walls'
-                        elif msg.channel.id == settings[2][5]:
-                            cmd = 'buffers'
-                        else:
-                            cmd = None
-                            embed = discord.Embed(title = f':gear: Settings - {prefix}clear', description = f':x: You cannot use that command because both walls and buffers are `ENABLED`.\n\nTo see the recent __wall-check__, do `{prefix}lastcheck` in {client.get_channel(settings[1][5]).mention} or do `{prefix}last walls` in any channel.\n\nTo see the recent __buffer-check__, do `{prefix}lastcheck` in {client.get_channel(settings[2][5]).mention} or do `{prefix}last buffers` in any channel.', color = discord.Colour.blue())
-                            embed.set_footer(f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                            await msg.channel.send(embed = embed)
-                    elif cmd in ('buffers', 'buffer'):
-                        if settings[2][0]:
-                            cmd = 'buffers'
-                        else:
-                            cmd = None
-                            embed = discord.Embed(title = f':gear: Settings - {prefix}clear', description = f':x: You cannot use that command because __buffer-check__ is `DISABLED`.\nTo turn it on, do\n```{prefix}settings buffers on```', color = discord.Colour.blue())
-                            embed.set_footer(f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                            await msg.channel.send(embed = embed)
-                    elif cmd in ('wall', 'walls'):
-                        if settings[2][0]:
-                            cmd = 'walls'
-                        else:
-                            cmd = None
-                            embed = discord.Embed(title = f':gear: Settings - {prefix}clear', description = f':x: You cannot use that command because __wall-check__ is `DISABLED`.\nTo turn it on, do\n```{prefix}settings walls on```', color = discord.Colour.blue())
-                            embed.set_footer(f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                            await msg.channel.send(embed = embed)
-                    elif settings[1][0]:
-                        cmd = 'walls'
-                    elif settings[2][0]:
-                        cmd = 'buffers'
-                    else:
-                        embed = discord.Embed(title = f':gear: Settings - {prefix}clear', description = f':x: You cannot use that command because both walls and buffers are `DISABLED`.\nTo turn them on, do\n```{prefix}settings <walls/buffers> on```', color = discord.Colour.blue())
-                        embed.set_footer(f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                        cmd = None
-                    if not cmd == None:
-                        if cmd == 'walls':
-                            logs = wallsLogsDir
-                            e = ':alarm_clock:'
-                            r = msg.guild.get_role(settings[1][6])
-                        elif cmd == 'buffers':
-                            logs = buffersLogsDir
-                            e = ':stopwatch:'
-                            r = msg.guild.get_role(settings[2][6])
-                        if r in msg.author.roles or msg.author.guild_permissions.administrator:
-                            with open(os.path.join(logs, str(msg.guild.id)+'.txt'), 'r') as file:
-                                found = False
-                                while not found:
-                                    text = file.readline()
-                                    if text.startswith(':white_check_mark:'):
-                                        found = True
-                                        break
-                                    elif text == '':
-                                        break
-                            if not found:
-                                embed = discord.Embed(title = f'{e} Recent {cmd}-check', description = 'Not found.')
-                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}')
-                                await msg.channel.send(embed=embed)
+                    if msg.channel.permissions_for(msg.guild.me).send_messages:
+                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                            settings = eval(file.read())
+                        if settings[1][0] and settings[2][0]:
+                            cmd = split_space_list(split_space(msg.content))[0].lower()
+                            if cmd in ('wall', 'walls'):
+                                cmd = 'walls'
+                            elif cmd in ('buffer', 'buffers'):
+                                cmd = 'buffers'
+                            elif msg.channel.id == settings[1][5]:
+                                cmd = 'walls'
+                            elif msg.channel.id == settings[2][5]:
+                                cmd = 'buffers'
                             else:
-                                ct = datetime.datetime.utcnow()
-                                lt = text[22:][:text[22:].find('**')-2]
-                                td = ct - datetime.datetime.strptime(lt, dateformat)
-                                td = td.seconds //60
-                                if td >60:
-                                    td = f'{td//60} hours and {td%60} minutes'
-                                else:
-                                    td = f'{td} minutes'
-                                user = text[22:][text[22:].find('**')+3:]
-                                embed = discord.Embed(title = f'{e} Recent {cmd}-check', description = f'It has been `{td}` since the last {cmd}-check at\n`{lt}` by {user}', color = discord.Colour.blue())
-                                user = user[3:21]
-                                with open(os.path.join(skinsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                                    text = file.read().split('\n')
-                                found = False
-                                for i in text:
-                                    if i.startswith(user):
-                                        skin = i[19:]
-                                        found = True
-                                        break
+                                cmd = None
+                                embed = discord.Embed(title = f':gear: Settings - {prefix}clear', description = f':x: You cannot use that command because both walls and buffers are `ENABLED`.\n\nTo see the recent __wall-check__, do `{prefix}lastcheck` in {client.get_channel(settings[1][5]).mention} or do `{prefix}last walls` in any channel.\n\nTo see the recent __buffer-check__, do `{prefix}lastcheck` in {client.get_channel(settings[2][5]).mention} or do `{prefix}last buffers` in any channel.', color = discord.Colour.blue())
+                                embed.set_footer(f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                await msg.channel.send(embed = embed)
+                        elif cmd in ('buffers', 'buffer'):
+                            if settings[2][0]:
+                                cmd = 'buffers'
+                            else:
+                                cmd = None
+                                embed = discord.Embed(title = f':gear: Settings - {prefix}clear', description = f':x: You cannot use that command because __buffer-check__ is `DISABLED`.\nTo turn it on, do\n```{prefix}settings buffers on```', color = discord.Colour.blue())
+                                embed.set_footer(f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                await msg.channel.send(embed = embed)
+                        elif cmd in ('wall', 'walls'):
+                            if settings[2][0]:
+                                cmd = 'walls'
+                            else:
+                                cmd = None
+                                embed = discord.Embed(title = f':gear: Settings - {prefix}clear', description = f':x: You cannot use that command because __wall-check__ is `DISABLED`.\nTo turn it on, do\n```{prefix}settings walls on```', color = discord.Colour.blue())
+                                embed.set_footer(f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                await msg.channel.send(embed = embed)
+                        elif settings[1][0]:
+                            cmd = 'walls'
+                        elif settings[2][0]:
+                            cmd = 'buffers'
+                        else:
+                            embed = discord.Embed(title = f':gear: Settings - {prefix}clear', description = f':x: You cannot use that command because both walls and buffers are `DISABLED`.\nTo turn them on, do\n```{prefix}settings <walls/buffers> on```', color = discord.Colour.blue())
+                            embed.set_footer(f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                            cmd = None
+                        if not cmd == None:
+                            if cmd == 'walls':
+                                logs = wallsLogsDir
+                                e = ':alarm_clock:'
+                                r = msg.guild.get_role(settings[1][6])
+                            elif cmd == 'buffers':
+                                logs = buffersLogsDir
+                                e = ':stopwatch:'
+                                r = msg.guild.get_role(settings[2][6])
+                            if r in msg.author.roles or msg.author.guild_permissions.administrator:
+                                with open(os.path.join(logs, str(msg.guild.id)+'.txt'), 'r') as file:
+                                    found = False
+                                    while not found:
+                                        text = file.readline()
+                                        if text.startswith(':white_check_mark:'):
+                                            found = True
+                                            break
+                                        elif text == '':
+                                            break
                                 if not found:
-                                    skin = ''
-                                embed.set_thumbnail(url = skin)
-                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                                await msg.channel.send(embed = embed)
-                        else:
-                            embed = discord.Embed(title = f':gear: Settings - {prefix}clear', description = f':x: You do not have permission to execute that command because you do not have the {r.mention} role.', color = discord.Colour.blue())
-                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                            await msg.channel.send(embed = embed)
-                elif cmd in ('goal', 'dailygoal', 'progress'):
-                    with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                        settings = eval(file.read())
-                    if settings[0][2] == None:
-                        embed = discord.Embed(title = ':gear: Settings - Daily Goals', description = f':x: You cannot use that command because the daily goals are `DISABLED` i.e. set to `None`.\nDo `{prefix}help goals` for more info.', color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    else:
-                        r = msg.guild.get_role(settings[0][4])
-                        if r in msg.author.roles or msg.author.guild_permissions.administrator:
-                            with open(os.path.join(todayDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                                text = file.read().split('\n')
-                            if text == ['']:
-                                embed = discord.Embed(title = 'Daily Progress', description = f"**Goal :** `{commas(str(settings[0][2]))}`\n\n**Value added till now :** `0`\n\n*Stop slacking guys and get to work.*", color = discord.Colour.gold())
-                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                                await msg.channel.send(embed = embed)
+                                    embed = discord.Embed(title = f'{e} Recent {cmd}-check', description = 'Not found.')
+                                    embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}')
+                                    await msg.channel.send(embed=embed)
+                                else:
+                                    ct = datetime.datetime.utcnow()
+                                    lt = text[22:][:text[22:].find('**')-2]
+                                    td = ct - datetime.datetime.strptime(lt, dateformat)
+                                    td = td.seconds //60
+                                    if td >60:
+                                        td = f'{td//60} hours and {td%60} minutes'
+                                    else:
+                                        td = f'{td} minutes'
+                                    user = text[22:][text[22:].find('**')+3:]
+                                    embed = discord.Embed(title = f'{e} Recent {cmd}-check', description = f'It has been `{td}` since the last {cmd}-check at\n`{lt}` by {user}', color = discord.Colour.blue())
+                                    user = user[3:21]
+                                    with open(os.path.join(skinsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                        text = file.read().split('\n')
+                                    found = False
+                                    for i in text:
+                                        if i.startswith(user):
+                                            skin = i[19:]
+                                            found = True
+                                            break
+                                    if not found:
+                                        skin = ''
+                                    embed.set_thumbnail(url = skin)
+                                    embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                    await msg.channel.send(embed = embed)
                             else:
-                                text.sort(key = sortkey, reverse = True)
-                                total = 0
-                                for i in range(len(text)):
-                                    total += int(eval(text[i][19:]))
-                                    text[i] = f'**{i+1}.** <@!{text[i][:18]}> {commas(text[i][19:])}'
-                                p = round(total/settings[0][2]*100, 3)
-                                if total < 0:
-                                    message = "I don't even know how that's possible."
-                                elif p > 100:
-                                    message = "Hurray! We're already past our goal! Good job! but keep going anyway."
-                                elif p > 90:
-                                    message = 'So close...'
-                                elif p > 75:
-                                    message = "We're almost there! Just a few more spawners. "
-                                elif p//1 == 69:
-                                    message = "Nice."
-                                elif p > 50:
-                                    message = "We are more than halfway through."
-                                elif p > 25:
-                                    message = "put a message here"
-                                elif p > 0:
-                                    message = "Go go go! We got a long way to go."
-                                elif p == 0:
-                                    message = 'Stop slacking guys and get to work.'
-                                text = '\n'.join(text)
-                                embed = discord.Embed(title = 'Daily Progress', description = f"**Goal :** `{commas(str(settings[0][2]))}`\n\n**Value added till now :**\n    `{commas(str(total))}` __{p}%__\n\n*\"{message}\"*\n\n**Top Contributers of the day - **\n{text}", color = discord.Colour.gold())
+                                embed = discord.Embed(title = f':gear: Settings - {prefix}clear', description = f':x: You do not have permission to execute that command because you do not have the {r.mention} role.', color = discord.Colour.blue())
                                 embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
                                 await msg.channel.send(embed = embed)
-
-                        else:
-                            embed = discord.Embed(title = ':gear: Settings - Daily Goal', description = f':x: You do not have permission to execute that command because you do not have the {r.mention} role.', color = discord.Colour.blue())
+                elif cmd in ('goal', 'dailygoal', 'progress'):
+                    if msg.channel.permissions_for(msg.guild.me).send_messages:
+                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                            settings = eval(file.read())
+                        if settings[0][2] == None:
+                            embed = discord.Embed(title = ':gear: Settings - Daily Goals', description = f':x: You cannot use that command because the daily goals are `DISABLED` i.e. set to `None`.\nDo `{prefix}help goals` for more info.', color = discord.Colour.blue())
                             embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
                             await msg.channel.send(embed = embed)
+                        else:
+                            r = msg.guild.get_role(settings[0][4])
+                            if r in msg.author.roles or msg.author.guild_permissions.administrator:
+                                with open(os.path.join(todayDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                                    text = file.read().split('\n')
+                                if text == ['']:
+                                    embed = discord.Embed(title = 'Daily Progress', description = f"**Goal :** `{commas(str(settings[0][2]))}`\n\n**Value added till now :** `0`\n\n*Stop slacking guys and get to work.*", color = discord.Colour.gold())
+                                    embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                    await msg.channel.send(embed = embed)
+                                else:
+                                    text.sort(key = sortkey, reverse = True)
+                                    total = 0
+                                    for i in range(len(text)):
+                                        total += int(eval(text[i][19:]))
+                                        text[i] = f'**{i+1}.** <@!{text[i][:18]}> {commas(text[i][19:])}'
+                                    p = round(total/settings[0][2]*100, 3)
+                                    if total < 0:
+                                        message = "I don't even know how that's possible."
+                                    elif p > 100:
+                                        message = "Hurray! We're already past our goal! Good job! but keep going anyway."
+                                    elif p > 90:
+                                        message = 'So close...'
+                                    elif p > 75:
+                                        message = "We're almost there! Just a few more spawners. "
+                                    elif p//1 == 69:
+                                        message = "Nice."
+                                    elif p > 50:
+                                        message = "We are more than halfway through."
+                                    elif p > 25:
+                                        message = "put a message here"
+                                    elif p > 0:
+                                        message = "Go go go! We got a long way to go."
+                                    elif p == 0:
+                                        message = 'Stop slacking guys and get to work.'
+                                    text = '\n'.join(text)
+                                    embed = discord.Embed(title = 'Daily Progress', description = f"**Goal :** `{commas(str(settings[0][2]))}`\n\n**Value added till now :**\n    `{commas(str(total))}` __{p}%__\n\n*\"{message}\"*\n\n**Top Contributers of the day - **\n{text}", color = discord.Colour.gold())
+                                    embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                    await msg.channel.send(embed = embed)
+
+                            else:
+                                embed = discord.Embed(title = ':gear: Settings - Daily Goal', description = f':x: You do not have permission to execute that command because you do not have the {r.mention} role.', color = discord.Colour.blue())
+                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                await msg.channel.send(embed = embed)
                 elif cmd in ('settings', 'setting'):
                     cmd = split_space(msg.content).lower()
                     cmdword = split_space_list(cmd)[0]
+                    perms = msg.channel.permissions_for(msg.guild.me)
                     if cmdword in ('valuemanagement', 'value') :
                         cmd = split_space(cmd).replace(' ', '')
                         if cmd == 'on' or cmd == 'enable':
@@ -1934,9 +1937,10 @@ async def on_message(msg):
                                 with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r+')  as file:
                                     settings = eval(file.read())
                                     if settings[0][0]:
-                                        embed = discord.Embed(title = ':gear: Settings - Value - Status', description = 'The __Value Management__ module is already set to `ENABLED`  :white_check_mark: .', color = discord.Colour.blue())
-                                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                                        await msg.channel.send(embed=embed)
+                                        if perms.send_messages:
+                                            embed = discord.Embed(title = ':gear: Settings - Value - Status', description = 'The __Value Management__ module is already set to `ENABLED`  :white_check_mark: .', color = discord.Colour.blue())
+                                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                            await msg.channel.send(embed=embed)
                                     else:
                                         settings[0][0] = True
                                         if client.get_channel(settings[0][3]) == None:
@@ -3140,291 +3144,306 @@ async def on_message(msg):
                         embed.set_footer(text = f"{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}", icon_url = msg.author.avatar_url)
                         await msg.channel.send(embed=embed)
                 elif cmd in ('history', 'log'):
-                    with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                        settings = eval(file.read())
-                    if msg.content.replace(' ', '') == prefix+cmd:
-                        cmd = ''
-                    else:
-                        cmd = split_space_list(msg.content)[1]
-                    if cmd == 'value':
-                        cmd = 'Value'
-                        logs = valueLogsDir
-                        role = msg.guild.get_role(settings[0][4])
-                        color = discord.Colour.dark_green()
-                    elif cmd in ('walls', 'wall'):
-                        cmd = 'Walls'
-                        logs = wallsLogsDir
-                        role = msg.guild.get_role(settings[1][6])
-                        color = discord.Colour.from_rgb(105, 105, 105)
-                    elif cmd in ('buffers', 'buffer'):
-                        cmd = 'Buffers'
-                        logs = buffersLogsDir
-                        role = msg.guild.get_role(settings[2][6])
-                        color = discord.Colour.from_rgb(138, 98, 76)
-                    elif msg.channel.id == settings[0][3]:
-                        cmd = 'Value'
-                        logs = valueLogsDir
-                        role = msg.guild.get_role(settings[0][4])
-                        color = discord.Colour.dark_green()
-                    elif msg.channel.id == settings[1][5]:
-                        cmd = 'Walls'
-                        logs = wallsLogsDir
-                        role = msg.guild.get_role(settings[1][6])
-                        color = discord.Colour.from_rgb(105, 105, 105)
-                    elif msg.channel.id == settings[2][5]:
-                        cmd = 'Buffers'
-                        logs = buffersLogsDir
-                        role = msg.guild.get_role(settings[2][6])
-                        color = discord.Colour.from_rgb(138, 98, 76)
-                    else:
-                        cmd = 'none'
-                    if cmd == 'none':
-                        embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s History", description = f'This command allows you to see the history of the commands used for specific modules.', color = discord.Colour.blue())
-                        try:
-                            ch = client.get_channel(settings[0][3]).mention
-                            embed.add_field(name = ':money_with_wings: **Value Module**', value = f'To see the history of __value module__ commands, do `{prefix}history` in {ch} or do\n```{prefix}log value <page>```', inline = False)
-                        except:
-                            embed.add_field(name = ':money_with_wings: **Value Module**', value = f'To see the history of __value module__ commands,\n```{prefix}log value <page>```', inline = False)
-                        try:
-                            ch = client.get_channel(settings[1][5]).mention
-                            embed.add_field(name = ':alarm_clock: **Wall-Check Module**', value = f'To see the history of __wall-check module__ commands, do `{prefix}history` in {ch} or do\n```{prefix}log walls <page>```', inline = False)
-                        except:
-                            embed.add_field(name = ':alarm_clock: **Wall-Check Module**', value = f'To see the history of __wall-check module__ commands,\n```{prefix}log walls <page>```', inline = False)
-                        try:
-                            ch = client.get_channel(settings[2][5]).mention
-                            embed.add_field(name = ':stopwatch: **Buffer-Check Module**', value = f'To see the history of __buffer-check module__ commands, do `{prefix}history` in {ch} or do\n```{prefix}log buffers <page>```', inline = False)
-                        except:
-                            embed.add_field(name = ':stopwatch: **Buffer-Check Module**', value = f'To see the history of __buffer-check module__ commands,\n```{prefix}log buffers <page>```', inline = False)
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    else:
-                        if role == None or role in msg.author.roles or msg.author.guild_permissions.administrator:
+                    perms = msg.channel.permissions_for(msg.guild.me)
+                    if perms.send_messages:
+                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                            settings = eval(file.read())
+                        if msg.content.replace(' ', '') == prefix+cmd:
+                            cmd = ''
+                        else:
+                            cmd = split_space_list(msg.content)[1]
+                        if cmd == 'value':
+                            cmd = 'Value'
+                            logs = valueLogsDir
+                            role = msg.guild.get_role(settings[0][4])
+                            color = discord.Colour.dark_green()
+                        elif cmd in ('walls', 'wall'):
+                            cmd = 'Walls'
+                            logs = wallsLogsDir
+                            role = msg.guild.get_role(settings[1][6])
+                            color = discord.Colour.from_rgb(105, 105, 105)
+                        elif cmd in ('buffers', 'buffer'):
+                            cmd = 'Buffers'
+                            logs = buffersLogsDir
+                            role = msg.guild.get_role(settings[2][6])
+                            color = discord.Colour.from_rgb(138, 98, 76)
+                        elif msg.channel.id == settings[0][3]:
+                            cmd = 'Value'
+                            logs = valueLogsDir
+                            role = msg.guild.get_role(settings[0][4])
+                            color = discord.Colour.dark_green()
+                        elif msg.channel.id == settings[1][5]:
+                            cmd = 'Walls'
+                            logs = wallsLogsDir
+                            role = msg.guild.get_role(settings[1][6])
+                            color = discord.Colour.from_rgb(105, 105, 105)
+                        elif msg.channel.id == settings[2][5]:
+                            cmd = 'Buffers'
+                            logs = buffersLogsDir
+                            role = msg.guild.get_role(settings[2][6])
+                            color = discord.Colour.from_rgb(138, 98, 76)
+                        else:
+                            cmd = 'none'
+                        if cmd == 'none':
+                            embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s History", description = f'This command allows you to see the history of the commands used for specific modules.', color = discord.Colour.blue())
                             try:
-                                page = split_space_list(msg.content)[2]
+                                ch = client.get_channel(settings[0][3]).mention
+                                embed.add_field(name = ':money_with_wings: **Value Module**', value = f'To see the history of __value module__ commands, do `{prefix}history` in {ch} or do\n```{prefix}log value <page>```', inline = False)
                             except:
-                                page = 1
-                            else:
-                                if page == '' or not pure_int(page):
-                                    page = 1
-                                elif int(eval(page)) < 1:
-                                    page = 1
-                                else:
-                                    page = int(eval(page))
-                            with open(os.path.join(logs, str(msg.guild.id)+'.txt'), 'r') as file:
-                                text = file.readlines()
-                            total = 1
-                            message = ''
-                            var = ''
-                            for i in text:
-                                if len(var + i) < 2048:
-                                    var = var + i
-                                else:
-                                    var = i
-                                    total += 1
-                                if total == page:
-                                    message = message + i
-                            if message == '':
-                                message = var
-                                page = total
-                            embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s {cmd} History", description = message, color = color)
-                            embed.set_footer(text = f'{msg.author.display_name} | Page {page} out of {total}\nDo {prefix}history {cmd.lower()} <page no> to goto a specific page or just react with the arrows.', icon_url = msg.author.avatar_url)
-                            msg = await msg.channel.send(embed = embed)
-                            await msg.add_reaction('\u23ea')
-                            await msg.add_reaction('\u25c0')
-                            await msg.add_reaction('\u23f9')
-                            await msg.add_reaction('\u25b6')
-                            await msg.add_reaction('\u23e9')
-                            def reaction_check(reaction, user):
-                                e = reaction.emoji.encode('unicode-escape').decode('ASCII')
-                                return user != client.user and reaction.message.id == msg.id and e in (r'\u23ea', r'\u25c0', r'\u23f9', r'\u25b6', r'\u23e9')
-                            while True:
+                                embed.add_field(name = ':money_with_wings: **Value Module**', value = f'To see the history of __value module__ commands,\n```{prefix}log value <page>```', inline = False)
+                            try:
+                                ch = client.get_channel(settings[1][5]).mention
+                                embed.add_field(name = ':alarm_clock: **Wall-Check Module**', value = f'To see the history of __wall-check module__ commands, do `{prefix}history` in {ch} or do\n```{prefix}log walls <page>```', inline = False)
+                            except:
+                                embed.add_field(name = ':alarm_clock: **Wall-Check Module**', value = f'To see the history of __wall-check module__ commands,\n```{prefix}log walls <page>```', inline = False)
+                            try:
+                                ch = client.get_channel(settings[2][5]).mention
+                                embed.add_field(name = ':stopwatch: **Buffer-Check Module**', value = f'To see the history of __buffer-check module__ commands, do `{prefix}history` in {ch} or do\n```{prefix}log buffers <page>```', inline = False)
+                            except:
+                                embed.add_field(name = ':stopwatch: **Buffer-Check Module**', value = f'To see the history of __buffer-check module__ commands,\n```{prefix}log buffers <page>```', inline = False)
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
+                        else:
+                            if role == None or role in msg.author.roles or msg.author.guild_permissions.administrator:
                                 try:
-                                    r, user = await client.wait_for('reaction_add',timeout = 120.0, check = reaction_check)
-                                    await msg.clear_reactions()
-                                    e = r.emoji.encode('unicode-escape').decode('ASCII')
-                                    if e == r'\u23ea':
-                                        page = page - 5
-                                    elif e == r'\u25c0':
-                                        page = page -1
-                                    elif e == r'\u23f9':
-                                        raise asyncio.TimeoutError
-                                    elif e == r'\u25b6':
-                                        page = page + 1
-                                    elif e == r'\u23e9':
-                                        page = page + 5
-                                    if page < 1:
+                                    page = split_space_list(msg.content)[2]
+                                except:
+                                    page = 1
+                                else:
+                                    if page == '' or not pure_int(page):
                                         page = 1
-                                    total = 1
-                                    message = ''
-                                    var = ''
-                                    for i in text:
-                                        if len(var + i) < 2048:
-                                            var = var + i
-                                        else:
-                                            var = i
-                                            total += 1
-                                        if total == page:
-                                            message = message + i
-                                    if message == '':
-                                        message = var
-                                        page = total
-                                    embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s {cmd} History", description = message, color = color)
-                                    embed.set_footer(text = f'{user.display_name} | Page {page} out of {total}\nDo `{prefix}history {cmd.lower()} <page no>` to goto a specific page or just react with the arrows.', icon_url = user.avatar_url)
-                                    await msg.edit(embed = embed)
+                                    elif int(eval(page)) < 1:
+                                        page = 1
+                                    else:
+                                        page = int(eval(page))
+                                with open(os.path.join(logs, str(msg.guild.id)+'.txt'), 'r') as file:
+                                    text = file.readlines()
+                                total = 1
+                                message = ''
+                                var = ''
+                                for i in text:
+                                    if len(var + i) < 2048:
+                                        var = var + i
+                                    else:
+                                        var = i
+                                        total += 1
+                                    if total == page:
+                                        message = message + i
+                                if message == '':
+                                    message = var
+                                    page = total
+                                embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s {cmd} History", description = message, color = color)
+                                embed.set_footer(text = f'{msg.author.display_name} | Page {page} out of {total}\nDo {prefix}history {cmd.lower()} <page no> to goto a specific page or just react with the arrows.', icon_url = msg.author.avatar_url)
+                                msg = await msg.channel.send(embed = embed)
+                                if perms.manage_messages and perms.add_reactions:
                                     await msg.add_reaction('\u23ea')
                                     await msg.add_reaction('\u25c0')
                                     await msg.add_reaction('\u23f9')
                                     await msg.add_reaction('\u25b6')
                                     await msg.add_reaction('\u23e9')
-                                except asyncio.TimeoutError:
-                                    await msg.clear_reactions()
+                                    def reaction_check(reaction, user):
+                                        e = reaction.emoji.encode('unicode-escape').decode('ASCII')
+                                        return user != client.user and reaction.message.id == msg.id and e in (r'\u23ea', r'\u25c0', r'\u23f9', r'\u25b6', r'\u23e9')
+                                    while True:
+                                        try:
+                                            r, user = await client.wait_for('reaction_add',timeout = 120.0, check = reaction_check)
+                                            if perms.manage_messages:
+                                                await msg.clear_reactions()
+                                            e = r.emoji.encode('unicode-escape').decode('ASCII')
+                                            if e == r'\u23ea':
+                                                page = page - 5
+                                            elif e == r'\u25c0':
+                                                page = page -1
+                                            elif e == r'\u23f9':
+                                                raise asyncio.TimeoutError
+                                            elif e == r'\u25b6':
+                                                page = page + 1
+                                            elif e == r'\u23e9':
+                                                page = page + 5
+                                            if page < 1:
+                                                page = 1
+                                            total = 1
+                                            message = ''
+                                            var = ''
+                                            for i in text:
+                                                if len(var + i) < 2048:
+                                                    var = var + i
+                                                else:
+                                                    var = i
+                                                    total += 1
+                                                if total == page:
+                                                    message = message + i
+                                            if message == '':
+                                                message = var
+                                                page = total
+                                            if perms.send_messages:
+                                                embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s {cmd} History", description = message, color = color)
+                                                embed.set_footer(text = f'{user.display_name} | Page {page} out of {total}\nDo `{prefix}history {cmd.lower()} <page no>` to goto a specific page or just react with the arrows.', icon_url = user.avatar_url)
+                                                await msg.edit(embed = embed)
+                                                if perms.add_reactions:
+                                                    await msg.add_reaction('\u23ea')
+                                                    await msg.add_reaction('\u25c0')
+                                                    await msg.add_reaction('\u23f9')
+                                                    await msg.add_reaction('\u25b6')
+                                                    await msg.add_reaction('\u23e9')
+                                        except asyncio.TimeoutError:
+                                            if perms.manage_messages:
+                                                await msg.clear_reactions()
+                            else:
+                                embed = discord.Embed(title = f':gear: Settings - {prefix}highscore', description = f':x: You do not have permission to execute that command because you do not have the {role.mention} role.', color = discord.Colour.blue())
+                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                await msg.channel.send(embed = embed)
+                elif cmd in ('top', 'highscore', 'highscores'):
+                    perms = msg.channel.permissions_for(msg.guild.me)
+                    if perms.send_messages:
+                        with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
+                            settings = eval(file.read())
+                        if split_space(msg.content).replace(' ', '') == '':
+                            cmd = ''
                         else:
-                            embed = discord.Embed(title = f':gear: Settings - {prefix}highscore', description = f':x: You do not have permission to execute that command because you do not have the {role.mention} role.', color = discord.Colour.blue())
+                            cmd = split_space_list(split_space(msg.content))[0]
+                        if cmd == 'value':
+                            cmd = 'Value'
+                            cmdraw = 'value'
+                            logs = valueDir
+                            role = msg.guild.get_role(settings[0][4])
+                            color = discord.Colour.dark_green()
+                        elif cmd in ('walls', 'wall'):
+                            cmd = 'Wall-Check'
+                            cmdraw  = 'walls'
+                            logs = wallsDir
+                            role = msg.guild.get_role(settings[1][6])
+                            color = discord.Colour.from_rgb(105, 105, 105)
+                        elif cmd in ('buffers', 'buffer'):
+                            cmd = 'Buffer-Check'
+                            cmdraw = 'buffers'
+                            logs = buffersDir
+                            role = msg.guild.get_role(settings[2][6])
+                            color = discord.Colour.from_rgb(138, 98, 76)
+                        elif msg.channel.id == settings[0][3]:
+                            cmd = 'Value'
+                            cmdraw = 'value'
+                            logs = valueDir
+                            role = msg.guild.get_role(settings[0][4])
+                            color = discord.Colour.dark_green()
+                        elif msg.channel.id == settings[1][5]:
+                            cmd = 'Wall-Check'
+                            cmdraw = 'walls'
+                            logs = wallsDir
+                            role = msg.guild.get_role(settings[1][6])
+                            color = discord.Colour.from_rgb(105, 105, 105)
+                        elif msg.channel.id == settings[2][5]:
+                            cmd = 'Buffer-Check'
+                            cmdraw = 'buffers'
+                            logs = buffersDir
+                            role = msg.guild.get_role(settings[2][6])
+                            color = discord.Colour.from_rgb(138, 98, 76)
+                        else:
+                            cmd = 'none'
+                        if cmd == 'none':
+                            embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s Highscores", description = f'This command allows you to see the highscores for your faction.', color = discord.Colour.blue())
+                            try:
+                                ch = client.get_channel(settings[0][3]).mention
+                                embed.add_field(name = ':money_with_wings: **Value Module**', value = f'To see the __value__ highscores, do `{prefix}highscore` in {ch} or do\n```{prefix}top value <page>```', inline = False)
+                            except:
+                                embed.add_field(name = ':money_with_wings: **Value Module**', value = f'To see the __value__ highscores,\n```{prefix}top value <page>```', inline = False)
+                            try:
+                                ch = client.get_channel(settings[1][5]).mention
+                                embed.add_field(name = ':alarm_clock: **Wall-Check Module**', value = f'To see the __wall-check__ highscores, do `{prefix}highscore` in {ch} or do\n```{prefix}top walls <page>```', inline = False)
+                            except:
+                                embed.add_field(name = ':alarm_clock: **Wall-Check Module**', value = f'To see the __wall-check__ highscores,\n```{prefix}top walls <page>```', inline = False)
+                            try:
+                                ch = client.get_channel(settings[2][5]).mention
+                                embed.add_field(name = ':stopwatch: **Buffer-Check Module**', value = f'To see the __buffer-check__ highscores, do `{prefix}highscore` in {ch} or do\n```{prefix}top buffers <page>```', inline = False)
+                            except:
+                                embed.add_field(name = ':stopwatch: **Buffer-Check Module**', value = f'To see the __buffer-check__ highscores,\n```{prefix}top buffers <page>```', inline = False)
                             embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
                             await msg.channel.send(embed = embed)
-                elif cmd in ('top', 'highscore', 'highscores'):
-                    with open(os.path.join(settingsDir, str(msg.guild.id)+'.txt'), 'r') as file:
-                        settings = eval(file.read())
-                    if split_space(msg.content).replace(' ', '') == '':
-                        cmd = ''
-                    else:
-                        cmd = split_space_list(split_space(msg.content))[0]
-                    if cmd == 'value':
-                        cmd = 'Value'
-                        cmdraw = 'value'
-                        logs = valueDir
-                        role = msg.guild.get_role(settings[0][4])
-                        color = discord.Colour.dark_green()
-                    elif cmd in ('walls', 'wall'):
-                        cmd = 'Wall-Check'
-                        cmdraw  = 'walls'
-                        logs = wallsDir
-                        role = msg.guild.get_role(settings[1][6])
-                        color = discord.Colour.from_rgb(105, 105, 105)
-                    elif cmd in ('buffers', 'buffer'):
-                        cmd = 'Buffer-Check'
-                        cmdraw = 'buffers'
-                        logs = buffersDir
-                        role = msg.guild.get_role(settings[2][6])
-                        color = discord.Colour.from_rgb(138, 98, 76)
-                    elif msg.channel.id == settings[0][3]:
-                        cmd = 'Value'
-                        cmdraw = 'value'
-                        logs = valueDir
-                        role = msg.guild.get_role(settings[0][4])
-                        color = discord.Colour.dark_green()
-                    elif msg.channel.id == settings[1][5]:
-                        cmd = 'Wall-Check'
-                        cmdraw = 'walls'
-                        logs = wallsDir
-                        role = msg.guild.get_role(settings[1][6])
-                        color = discord.Colour.from_rgb(105, 105, 105)
-                    elif msg.channel.id == settings[2][5]:
-                        cmd = 'Buffer-Check'
-                        cmdraw = 'buffers'
-                        logs = buffersDir
-                        role = msg.guild.get_role(settings[2][6])
-                        color = discord.Colour.from_rgb(138, 98, 76)
-                    else:
-                        cmd = 'none'
-                    if cmd == 'none':
-                        embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s Highscores", description = f'This command allows you to see the highscores for your faction.', color = discord.Colour.blue())
-                        try:
-                            ch = client.get_channel(settings[0][3]).mention
-                            embed.add_field(name = ':money_with_wings: **Value Module**', value = f'To see the __value__ highscores, do `{prefix}highscore` in {ch} or do\n```{prefix}top value <page>```', inline = False)
-                        except:
-                            embed.add_field(name = ':money_with_wings: **Value Module**', value = f'To see the __value__ highscores,\n```{prefix}top value <page>```', inline = False)
-                        try:
-                            ch = client.get_channel(settings[1][5]).mention
-                            embed.add_field(name = ':alarm_clock: **Wall-Check Module**', value = f'To see the __wall-check__ highscores, do `{prefix}highscore` in {ch} or do\n```{prefix}top walls <page>```', inline = False)
-                        except:
-                            embed.add_field(name = ':alarm_clock: **Wall-Check Module**', value = f'To see the __wall-check__ highscores,\n```{prefix}top walls <page>```', inline = False)
-                        try:
-                            ch = client.get_channel(settings[2][5]).mention
-                            embed.add_field(name = ':stopwatch: **Buffer-Check Module**', value = f'To see the __buffer-check__ highscores, do `{prefix}highscore` in {ch} or do\n```{prefix}top buffers <page>```', inline = False)
-                        except:
-                            embed.add_field(name = ':stopwatch: **Buffer-Check Module**', value = f'To see the __buffer-check__ highscores,\n```{prefix}top buffers <page>```', inline = False)
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
-                    else:
-                        if role == None or role in msg.author.roles or msg.author.guild_permissions.administrator:
-                            try:
-                                page = split_space_list(msg.content)[2]
-                            except:
-                                page = 1
-                            else:
-                                if page == '' or not pure_int(page):
-                                    page = 1
-                                elif int(eval(page)) < 1:
+                        else:
+                            if role == None or role in msg.author.roles or msg.author.guild_permissions.administrator:
+                                try:
+                                    page = split_space_list(msg.content)[2]
+                                except:
                                     page = 1
                                 else:
-                                    page = int(eval(page))
-                            with open(os.path.join(logs, str(msg.guild.id)+'.txt'), 'r') as file:
-                                text = file.read().split('\n')
-                            if text == ['']:
-                                embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s {cmd} Highscores", description = 'Nothing to show here.', color = color)
-                                embed.set_footer(text = f'{msg.author.display_name} | Page 1 out of 1', icon_url = msg.author.avatar_url)
-                                await msg.channel.send(embed = embed)
-                            else:
-                                total = ceil(len(text)/10)
-                                text.sort(key=sortkey, reverse = True)
-                                for i in range(len(text)):
-                                    text[i] = f'**{i+1}.** <@{text[i][:18]}> {commas(str(text[i][19:]))}'
-                                if page > total:
-                                    page = total
-                                if total == 1 or page == total:
-                                    message = '\n'.join(text[(page-1)*10:])
+                                    if page == '' or not pure_int(page):
+                                        page = 1
+                                    elif int(eval(page)) < 1:
+                                        page = 1
+                                    else:
+                                        page = int(eval(page))
+                                with open(os.path.join(logs, str(msg.guild.id)+'.txt'), 'r') as file:
+                                    text = file.read().split('\n')
+                                if text == ['']:
+                                    embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s {cmd} Highscores", description = 'Nothing to show here.', color = color)
+                                    embed.set_footer(text = f'{msg.author.display_name} | Page 1 out of 1', icon_url = msg.author.avatar_url)
+                                    await msg.channel.send(embed = embed)
                                 else:
-                                    message = '\n'.join(text[(page-1)*10:page*10])
-                                embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s {cmd} Highscores", description = message, color = color)
-                                embed.set_footer(text = f'{msg.author.display_name} | Page {page} out of {total}\nDo {prefix}top {cmdraw} <page no> to goto a specific page or just react with the arrows.', icon_url = msg.author.avatar_url)
-                                msg = await msg.channel.send(embed = embed)
-                                await msg.add_reaction('\u23ea')
-                                await msg.add_reaction('\u25c0')
-                                await msg.add_reaction('\u23f9')
-                                await msg.add_reaction('\u25b6')
-                                await msg.add_reaction('\u23e9')
-                                def reaction_check(reaction, user):
-                                    e = reaction.emoji.encode('unicode-escape').decode('ASCII')
-                                    return user != client.user and reaction.message.id == msg.id and e in (r'\u23ea', r'\u25c0', r'\u23f9', r'\u25b6', r'\u23e9')
-                                while True:
-                                    try:
-                                        r, user = await client.wait_for('reaction_add',timeout = 120.0, check = reaction_check)
-                                        await msg.clear_reactions()
-                                        e = r.emoji.encode('unicode-escape').decode('ASCII')
-                                        if e == r'\u23ea':
-                                            page = page - 5
-                                        elif e == r'\u25c0':
-                                            page = page -1
-                                        elif e == r'\u23f9':
-                                            raise asyncio.TimeoutError
-                                        elif e == r'\u25b6':
-                                            page = page + 1
-                                        elif e == r'\u23e9':
-                                            page = page + 5
-                                        if page < 1:
-                                            page = 1
-                                        if page > total:
-                                            page = total
-                                        if total == 1 or page == total:
-                                            message = '\n'.join(text[(page-1)*10:])
-                                        else:
-                                            message = '\n'.join(text[(page-1)*10:page*10])
-                                        embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s {cmd} Highscores", description = message, color = color)
-                                        embed.set_footer(text = f'{user.display_name} | Page {page} out of {total}\nDo {prefix}top {cmdraw} <page no> to goto a specific page or just react with the arrows.', icon_url = user.avatar_url)
-                                        await msg.edit(embed = embed)
+                                    total = ceil(len(text)/10)
+                                    text.sort(key=sortkey, reverse = True)
+                                    for i in range(len(text)):
+                                        text[i] = f'**{i+1}.** <@{text[i][:18]}> {commas(str(text[i][19:]))}'
+                                    if page > total:
+                                        page = total
+                                    if total == 1 or page == total:
+                                        message = '\n'.join(text[(page-1)*10:])
+                                    else:
+                                        message = '\n'.join(text[(page-1)*10:page*10])
+                                    embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s {cmd} Highscores", description = message, color = color)
+                                    embed.set_footer(text = f'{msg.author.display_name} | Page {page} out of {total}\nDo {prefix}top {cmdraw} <page no> to goto a specific page or just react with the arrows.', icon_url = msg.author.avatar_url)
+                                    msg = await msg.channel.send(embed = embed)
+                                    if perms.add_reactions and perms.manage_messages:
                                         await msg.add_reaction('\u23ea')
                                         await msg.add_reaction('\u25c0')
                                         await msg.add_reaction('\u23f9')
                                         await msg.add_reaction('\u25b6')
                                         await msg.add_reaction('\u23e9')
-                                    except asyncio.TimeoutError:
-                                        await msg.clear_reactions()
-                        else:
-                            embed = discord.Embed(title = f':gear: Settings - {prefix}highscore', description = f':x: You do not have permission to execute that command because you do not have the {role.mention} role.', color = discord.Colour.blue())
-                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                            await msg.channel.send(embed = embed)
+                                        def reaction_check(reaction, user):
+                                            e = reaction.emoji.encode('unicode-escape').decode('ASCII')
+                                            return user != client.user and reaction.message.id == msg.id and e in (r'\u23ea', r'\u25c0', r'\u23f9', r'\u25b6', r'\u23e9')
+                                        while True:
+                                            try:
+                                                r, user = await client.wait_for('reaction_add',timeout = 120.0, check = reaction_check)
+                                                if perms.manage_messages:
+                                                    await msg.clear_reactions()
+                                                e = r.emoji.encode('unicode-escape').decode('ASCII')
+                                                if e == r'\u23ea':
+                                                    page = page - 5
+                                                elif e == r'\u25c0':
+                                                    page = page -1
+                                                elif e == r'\u23f9':
+                                                    raise asyncio.TimeoutError
+                                                elif e == r'\u25b6':
+                                                    page = page + 1
+                                                elif e == r'\u23e9':
+                                                    page = page + 5
+                                                if page < 1:
+                                                    page = 1
+                                                if page > total:
+                                                    page = total
+                                                if total == 1 or page == total:
+                                                    message = '\n'.join(text[(page-1)*10:])
+                                                else:
+                                                    message = '\n'.join(text[(page-1)*10:page*10])
+                                                if perms.send_messages:
+                                                    embed = discord.Embed(title = f":page_facing_up: {msg.guild.name}'s {cmd} Highscores", description = message, color = color)
+                                                    embed.set_footer(text = f'{user.display_name} | Page {page} out of {total}\nDo {prefix}top {cmdraw} <page no> to goto a specific page or just react with the arrows.', icon_url = user.avatar_url)
+                                                    await msg.edit(embed = embed)
+                                                    if perms.add_reactions:
+                                                        await msg.add_reaction('\u23ea')
+                                                        await msg.add_reaction('\u25c0')
+                                                        await msg.add_reaction('\u23f9')
+                                                        await msg.add_reaction('\u25b6')
+                                                        await msg.add_reaction('\u23e9')
+                                            except asyncio.TimeoutError:
+                                                if perms.manage_messages:
+                                                    await msg.clear_reactions()
+                            else:
+                                embed = discord.Embed(title = f':gear: Settings - {prefix}highscore', description = f':x: You do not have permission to execute that command because you do not have the {role.mention} role.', color = discord.Colour.blue())
+                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                await msg.channel.send(embed = embed)
                 elif cmd == 'reset':
+                    perms = msg.channel.permissions_for(msg.guild.me)
                     cmd = split_space_list(split_space(msg.content))[0].lower()
                     if cmd == 'value':
                         cmd = 'value'
@@ -3443,18 +3462,21 @@ async def on_message(msg):
                     else:
                         cmd = None
                     if cmd == None:
-                        embed = discord.Embed(title = f"\U0001f4d4 Help - {prefix}reset", description = f'Use this command to reset the highscores and history for specific modules.\n```{prefix}reset <value/walls/buffers/all>```', color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
+                        if perms.send_messages:
+                            embed = discord.Embed(title = f"\U0001f4d4 Help - {prefix}reset", description = f'Use this command to reset the highscores and history for specific modules.\n```{prefix}reset <value/walls/buffers/all>```', color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
                     elif msg.author.guild_permissions.administrator:
                         if cmd == 'all':
-                            await msg.channel.send(f':warning: **You are about to reset __ALL__ modules**\n{msg.author.mention} Type `CONFIRM RESET` in chat within the next 10 seconds to confirm the reset.')
+                            if perms.send_messages:
+                                await msg.channel.send(f':warning: **You are about to reset __ALL__ modules**\n{msg.author.mention} Type `CONFIRM RESET` in chat within the next 10 seconds to confirm the reset.')
                             def check(var):
                                 return var.author == msg.author and var.channel == msg.channel and var.content == 'CONFIRM RESET'
                             try:
                                 msg = await client.wait_for('message', timeout = 10, check = check)
                             except asyncio.TimeoutError:
-                                await msg.channel.send('Reset has been aborted.')
+                                if perms.send_messages:
+                                    await msg.channel.send('Reset has been aborted.')
                             else:
                                 with open(os.path.join(valueLogsDir, str(msg.guild.id)+'.txt'), 'w+') as file:
                                     file.write(f':gear: **[{datetime.datetime.utcnow().strftime(dateformat)}]:** {msg.author.mention} : reset the `highscores` and `history` for __ALL__ modules.')
@@ -3468,39 +3490,47 @@ async def on_message(msg):
                                     pass
                                 with open(os.path.join(buffersDir, str(msg.guild.id)+'.txt'), 'w+') as file:
                                     pass
-                                embed =  discord.Embed(title = f':gear: Settings - {prefix}reset', description = f':white_check_mark: **RESET CONFIRMED**\nThe highscores and history of __ALL__ modules have been deleted.\nHope you had a good map.', color = discord.Colour.blue())
-                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                                await msg.channel.send(embed = embed)
+                                if perms.send_messages:
+                                    embed =  discord.Embed(title = f':gear: Settings - {prefix}reset', description = f':white_check_mark: **RESET CONFIRMED**\nThe highscores and history of __ALL__ modules have been deleted.\nHope you had a good map.', color = discord.Colour.blue())
+                                    embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                    await msg.channel.send(embed = embed)
                         else:
-                            await msg.channel.send(f':warning: **You are about to reset the __{cmd}__ module**\n{msg.author.mention} Type `CONFIRM RESET` in chat within the next 10 seconds to confirm the reset.')
+                            if perms.send_messages:
+                                await msg.channel.send(f':warning: **You are about to reset the __{cmd}__ module**\n{msg.author.mention} Type `CONFIRM RESET` in chat within the next 10 seconds to confirm the reset.')
                             def check(var):
                                 return var.author == msg.author and var.channel == msg.channel and var.content == 'CONFIRM RESET'
                             try:
                                 msg = await client.wait_for('message', timeout = 10, check = check)
                             except asyncio.TimeoutError:
-                                await msg.channel.send('Reset has been aborted.')
+                                if perms.send_messages:
+                                    await msg.channel.send('Reset has been aborted.')
                             else:
                                 with open(os.path.join(logs, str(msg.guild.id)+'.txt'), 'w+') as file:
                                     file.write(f':gear: **[{datetime.datetime.utcnow().strftime(dateformat)}]:** {msg.author.mention} : reset the `highscores` and `history` for the __{cmd}__ module.')
                                 with open(os.path.join(score, str(msg.guild.id)+'.txt'), 'w+') as file:
                                     pass
-                                embed =  discord.Embed(title = f':gear: Settings - {prefix}reset', description = f':white_check_mark: **RESET CONFIRMED**\nThe highscores and history of the __{cmd}__ module have been deleted.\nHope you had a good map.', color = discord.Colour.blue())
-                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                                await msg.channel.send(embed = embed)
+                                if perms.send_messages:
+                                    embed =  discord.Embed(title = f':gear: Settings - {prefix}reset', description = f':white_check_mark: **RESET CONFIRMED**\nThe highscores and history of the __{cmd}__ module have been deleted.\nHope you had a good map.', color = discord.Colour.blue())
+                                    embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                    await msg.channel.send(embed = embed)
                     else:
-                        embed = discord.Embed(title = f':gear: Settings - {prefix}reset', description = 'You do not have the permission to execute that command.', color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
+                        if perms.send_messages:
+                            embed = discord.Embed(title = f':gear: Settings - {prefix}reset', description = 'You do not have the permission to execute that command.', color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
                 elif cmd in ('iam', 'skin'):
+                    perms = msg.channel.permissions_for(msg.guild.me)
                     cmd = split_space_list(split_space(msg.content))[0]
                     if cmd == '':
-                        embed = discord.Embed(title = '\U0001F4D4 Help - Skin', description = f'Use this command to associate your skin to your discord account.\n```{prefix}skin <username>```', color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed = embed)
+                        if perms.send_messages:
+                            embed = discord.Embed(title = '\U0001F4D4 Help - Skin', description = f'Use this command to associate your skin to your discord account.\n```{prefix}skin <username>```', color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed = embed)
                     elif len(cmd)<3 or len(cmd) > 16:
-                        embed = discord.Embed(title = '\U0001F4D4 Help - Skin', description = ':x: Invalid Username\nUsername must be between 3 and 16 characters.', color = discord.Colour.blue())
-                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                        await msg.channel.send(embed=embed)
+                        if perns.send_messages:
+                            embed = discord.Embed(title = '\U0001F4D4 Help - Skin', description = ':x: Invalid Username\nUsername must be between 3 and 16 characters.', color = discord.Colour.blue())
+                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                            await msg.channel.send(embed=embed)
                     else:
                         found = False
                         for i in cmd:
@@ -3508,9 +3538,10 @@ async def on_message(msg):
                                 found = True
                                 break
                         if found:
-                            embed = discord.Embed(title = '\U0001F4D4 Help - Skin', description = ":x: Invalid username\nUsername must only consist of alphanumerics and underscore.", color = discord.Colour.blue())
-                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                            await msg.channel.send(embed = embed)
+                            if perms.send_messages:
+                                embed = discord.Embed(title = '\U0001F4D4 Help - Skin', description = ":x: Invalid username\nUsername must only consist of alphanumerics and underscore.", color = discord.Colour.blue())
+                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                await msg.channel.send(embed = embed)
                         else:
                             with open(os.path.join(skinsDir, str(msg.guild.id)+'.txt'), 'r+') as file:
                                 text = file.read().split('\n')
@@ -3528,19 +3559,22 @@ async def on_message(msg):
                                 file.truncate(0)
                                 file.seek(0,0)
                                 file.write('\n'.join(text))
-                            embed = discord.Embed(title = ':gear: Settings - Skin', description = f':white_check_mark: Your account has been connected to the minecraft account **{cmd}**.', color = discord.Colour.blue())
-                            embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                            await msg.channel.send(embed = embed)
+                            if perms.send_messages:
+                                embed = discord.Embed(title = ':gear: Settings - Skin', description = f':white_check_mark: Your account has been connected to the minecraft account **{cmd}**.', color = discord.Colour.blue())
+                                embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                                await msg.channel.send(embed = embed)
                 elif cmd == 'prefix':
-                    embed = discord.Embed(title = ':gear: Settings - Prefix', description = f'The prefix for this server is - `{prefix}`.', color = discord.Colour.blue())
-                    embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
-                    await msg.channel.send(embed = embed)
+                    if msg.channel.permissions_for(msg.guild.me).send_messages:
+                        embed = discord.Embed(title = ':gear: Settings - Prefix', description = f'The prefix for this server is - `{prefix}`.', color = discord.Colour.blue())
+                        embed.set_footer(text = f'{msg.author.display_name} | {datetime.datetime.utcnow().strftime(dateformat)}', icon_url = msg.author.avatar_url)
+                        await msg.channel.send(embed = embed)
                 elif cmd == 'invite' and prefix!='??':
-                    embed = discord.Embed(title = discord.Embed.Empty, description = "Invite me to your server using this [link](https://discordapp.com/api/oauth2/authorize?client_id=637575751583137822&permissions=268659792&scope=bot)\nMake sure to give all the required permissions to ensure proper performance.\n\nYou can also join the [discord server](https://discord.gg/bnKE45S) if you want. Feel free to report bugs / give suggestions there. Just don't expect anything crazy" , color = discord.Colour.gold())
-                    embed.set_author(name = 'Support | Meta Factions Bot', icon_url = client.user.avatar_url)
-                    embed.set_footer(text = '<3')
-                    await msg.channel.send(embed = embed)
-                    await msg.author.send(embed = embed)
+                    if msg.channel.permissions_for(msg.guild.me).send_messages:
+                        embed = discord.Embed(title = discord.Embed.Empty, description = "Invite me to your server using this [link](https://discordapp.com/api/oauth2/authorize?client_id=637575751583137822&permissions=268659792&scope=bot)\nMake sure to give all the required permissions to ensure proper performance.\n\nYou can also join the [discord server](https://discord.gg/bnKE45S) if you want. Feel free to report bugs / give suggestions there. Just don't expect anything crazy" , color = discord.Colour.gold())
+                        embed.set_author(name = 'Support | Meta Factions Bot', icon_url = client.user.avatar_url)
+                        embed.set_footer(text = '<3')
+                        await msg.channel.send(embed = embed)
+                        await msg.author.send(embed = embed)
                 elif cmd in ('credits', 'credit', 'info') and prefix !='??':
                     embed = discord.Embed(title = discord.Embed.Empty, description = 'This bot was made by `Kevqn#0869` and is being hosted by `xNightmare#9571`.\nIf you have any problems/suggestions, feel free to join the [support server](https://discord.gg/bnKE45S).', color = discord.Colour.blue())
                     embed.set_author(name = 'Credits | Meta Factions Bot', icon_url = client.user.avatar_url)
